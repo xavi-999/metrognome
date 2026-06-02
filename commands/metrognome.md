@@ -11,9 +11,10 @@ Read `${CLAUDE_PLUGIN_ROOT}/skills/metrognome/SKILL.md` now and follow it.
 ARGUMENTS: $ARGUMENTS
 
 Routing:
-- **No arguments** -> present the top menu (Autoresearch / Perf Map 3D / Doctor) per SKILL.md's menu rules.
+- **No arguments** -> present the top menu (Autoresearch / Perf Map 3D / Doctor / Configurations) per SKILL.md's menu rules.
 - **A preset name** (`first-load`, `listing`, `memory-leaks`, `bundle-size`, `re-renders`), optionally with `--target` -> skip the menu and run that Autoresearch preset.
 - **Natural language** (e.g. "fix jank on the feed list", "the app is slow to start") -> map it to the closest preset/target and confirm before running the loop.
+- **`config` or `configurations`** -> open the Configurations menu (view/edit `.metrognome/config.json`).
 
 Before doing anything else, run the Doctor preflight described in SKILL.md (tools present, Metro session live, clean git tree, load the repo's performance memory).
 

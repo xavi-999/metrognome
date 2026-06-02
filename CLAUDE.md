@@ -15,6 +15,9 @@ npm run scan -- <path-to-rn-app> [--out graph.json]
 # Build standalone perf-map HTML from graph.json
 npm run map -- graph.json [--out perf-map.html] [--open]
 
+# Build live run-report HTML from run-state.json (pitch demo: use the sample)
+npm run report -- skills/metrognome/assets/run-state.sample.json --out /tmp/report.html --open
+
 # Verify the gate math (self-test with known inputs)
 npm run stats:test
 ```
@@ -24,6 +27,7 @@ Direct node invocations (useful when iterating on a specific script):
 ```bash
 node skills/metrognome/scripts/perf_scan.mjs <repo-or-src-path> --out graph.json
 node skills/metrognome/scripts/build_perf_map.mjs graph.json --out perf-map.html --open
+node skills/metrognome/scripts/build_run_report.mjs <run-state.json> --out report.html --open
 node skills/metrognome/scripts/stats.mjs --baseline "1200,1180" --candidate "980,990" --min-effect 30 --k 2 --direction lower --unit ms
 node skills/metrognome/scripts/stats.mjs --self-test
 node skills/metrognome/scripts/doctor.mjs
@@ -39,7 +43,7 @@ Node ≥ 18 required (ESM throughout).
 commands/            /metrognome slash-command entrypoint (metrognome.md)
 hooks/               SessionStart (npm install) + UserPromptSubmit (perf-memory nudge)
 skills/metrognome/
-  SKILL.md           the orchestrator loaded by the command — owns the menu, loop, gate, ledger, memory
+  SKILL.md           the orchestrator — menu (4 items), run-options, loop, gate, config, ledger, memory
   references/        readonly reference docs read by SKILL.md at runtime:
     presets.md       the 5 presets (first-load · listing · memory-leaks · bundle-size · re-renders)
     tools.md         ⚑ tool command surfaces (agent-device / agent-react-devtools / metro-mcp cheatsheet)
@@ -49,9 +53,12 @@ skills/metrognome/
   scripts/           standalone Node CLIs:
     perf_scan.mjs    Babel AST walker + 10 anti-pattern detectors → graph.json
     build_perf_map.mjs  merges graph.json + vendored 3d-force-graph → standalone HTML
+    build_run_report.mjs  merges run-state.json + report template → live HTML dashboard
     stats.mjs        gate math (mean, stddev, pooledStd, KEEP/REVERT decision)
-    doctor.mjs       preflight checker + .metrognome/ bootstrapper
-  assets/            vendored 3d-force-graph (offline, MIT), HTML template, ledger template
+    doctor.mjs       preflight checker + .metrognome/ bootstrapper (incl. config.json)
+  assets/            vendored 3d-force-graph (offline, MIT), HTML templates, ledger template,
+                     run-state.sample.json (pitch demo — use with npm run report)
+docs/                banner.svg/png, perf-map.png, diagrams/ (loop · orchestration · gate · signal-vs-noise)
 examples/            sample-rn-app with seeded anti-patterns (fixture only — see below)
 ```
 
@@ -89,7 +96,16 @@ MG="$(dirname "$(dirname "$(find "$HOME/.claude/plugins" -path '*metrognome*/scr
 
 When Doctor runs in a user's RN project it bootstraps:
 - `.metrognome/perf-memory.md` — per-repo performance brain (one line per gap, committed with the app)
+- `.metrognome/config.json` — run settings (commitMode, liveReport, openReport, runs, warmupDiscard, k, budget); defaults written on first bootstrap, editable via **menu item 4 · Configurations**
 - `.metrognome/ledger/` — verbose per-run experiment logs
 - `.metrognome/archive/` — compacted old memory entries
+- `.metrognome/.gitignore` — excludes `report.html` and `run-state.json` (generated artifacts)
+
+The `commitMode` config key controls the final commit shape after a run:
+- `per-iteration` (default) — keeps one commit per KEEP iteration, as today
+- `one-commit` — `git reset --soft <baseline-sha>` + one summary commit at end of run
+- `no-commit` — `git reset --soft <baseline-sha>`, leaving changes staged for the user to review
+
+The live report (`liveReport: true`) writes `.metrognome/report.html` after each iteration via `build_run_report.mjs`. The report auto-refreshes every 3s and shows baseline, each iteration (KEEP/REVERT badge, delta vs noise band), and the net improvement. The sample run-state (`assets/run-state.sample.json`) renders a complete offline demo: `npm run report -- skills/metrognome/assets/run-state.sample.json --open`.
 
 `hooks/hooks.json` has two hooks: a `SessionStart` that auto-installs npm deps on first load, and a `UserPromptSubmit` that fires when a perf-related prompt lands in a `.metrognome/`-tracked repo to remind you to consult/update `perf-memory.md`.

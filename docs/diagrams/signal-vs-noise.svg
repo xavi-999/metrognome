@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440" width="800" height="440">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0fdf4"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="440" fill="url(#bg)"/>
+  <text x="400" y="42" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="13" font-weight="600"
+    letter-spacing="0.18em" fill="#94a3b8">SIGNAL, NOT NOISE — HOW THE PERF MAP STAYS SELECTIVE</text>
+
+  <!-- funnel shape: wide at top (all findings), narrow at bottom (real hotspots) -->
+  <!-- funnel outline -->
+  <path d="M 200 80 L 600 80 L 480 340 L 320 340 Z"
+    fill="none" stroke="rgba(15,23,42,0.08)" stroke-width="1.5"/>
+
+  <!-- layer 1: all raw findings (wide, at top) -->
+  <rect x="200" y="80" width="400" height="55" rx="0" fill="rgba(148,163,184,0.12)"/>
+  <text x="400" y="101" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="12.5" fill="#475569">ALL raw findings  ·  every inline prop, missing memo…</text>
+  <text x="400" y="120" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="11" fill="#64748b">CRITICAL · HIGH · MEDIUM · LOW</text>
+
+  <!-- separator -->
+  <line x1="200" y1="135" x2="600" y2="135" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>
+
+  <!-- layer 2: severity weighting -->
+  <text x="400" y="158" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="12" fill="#475569">① severity weights</text>
+  <text x="400" y="176" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="10.5" fill="#94a3b8">CRITICAL ×10  ·  HIGH ×5  ·  MEDIUM ×1.5  ·  LOW ×0.4</text>
+
+  <!-- separator -->
+  <line x1="232" y1="192" x2="568" y2="192" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>
+
+  <!-- layer 3: diminishing returns + centrality -->
+  <text x="400" y="215" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="12" fill="#475569">② diminishing returns past 3 hits / file</text>
+  <text x="400" y="233" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="12" fill="#475569">③ log-scale centrality  (structural debt only, not LOW)</text>
+
+  <!-- separator -->
+  <line x1="268" y1="248" x2="532" y2="248" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>
+
+  <!-- layer 4: combined gate -->
+  <text x="400" y="272" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="12" fill="#475569">④ hotspot gate: debt ≥ 6  or  any HIGH / CRITICAL</text>
+
+  <!-- separator -->
+  <line x1="296" y1="288" x2="504" y2="288" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>
+
+  <!-- bottom: real hotspots (narrow, green) -->
+  <rect x="320" y="288" width="160" height="52" rx="0"
+    fill="rgba(22,163,74,0.10)" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="400" y="311" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="13" font-weight="700"
+    fill="#16a34a">REAL HOTSPOTS</text>
+  <text x="400" y="330" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="10.5" fill="#475569">the nodes that actually matter</text>
+
+  <!-- right callout: grey nodes explanation -->
+  <text x="660" y="220" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11.5" fill="#94a3b8">most nodes</text>
+  <text x="660" y="238" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11.5" fill="#94a3b8">stay grey</text>
+  <text x="660" y="256" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="10" fill="#94a3b8">(below gate)</text>
+  <!-- grey dot cluster -->
+  <circle cx="620" cy="190" r="6" fill="#94a3b8" opacity="0.4"/>
+  <circle cx="634" cy="200" r="5" fill="#94a3b8" opacity="0.3"/>
+  <circle cx="614" cy="208" r="4" fill="#94a3b8" opacity="0.25"/>
+  <circle cx="640" cy="185" r="7" fill="#94a3b8" opacity="0.35"/>
+
+  <!-- left callout: why -->
+  <text x="140" y="200" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11.5" fill="#94a3b8">healthy code</text>
+  <text x="140" y="218" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11.5" fill="#94a3b8">fires detectors</text>
+  <text x="140" y="236" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11.5" fill="#94a3b8">constantly</text>
+
+  <!-- bottom note -->
+  <text x="400" y="400" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11" fill="#94a3b8">Tuning constants live in perf_scan.mjs CONFIG block — never tune against the fixture app.</text>
+  <text x="400" y="420" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="10.5" fill="#94a3b8">node size = perf debt  ·  color = max severity  ·  click → flaw + guide</text>
+
+  <rect x="0" y="0" width="4" height="440" fill="#16a34a"/>
+</svg>

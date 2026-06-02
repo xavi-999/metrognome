@@ -5,7 +5,7 @@ description: Autonomous, scientific React Native & Expo performance optimization
 
 # metrognome
 
-metrognome routes React Native performance work through Callstack's tools and enforces a measurement discipline: propose one fix → measure N times → keep it only if the gain beats the noise, else revert. Git is the memory; every kept change is an atomic, metric-gated commit.
+metrognome routes React Native performance work through Callstack's tools and enforces a measurement discipline: propose one fix → measure N times → keep it only if the gain beats the noise, else revert. Git is the internal memory; per-iteration commits enable instant auto-revert, and the final commit shape is configurable (per-iteration · one commit · leave staged).
 
 It's the React Native twin of the web `webapp-perf-playbook`. Same spine: delegate measurement, own the catalog + glue loop, never record an unmeasured fix.
 
@@ -34,9 +34,17 @@ Bare invocation → present the **top menu**:
 1. **Autoresearch** — pick a preset, run the autonomous optimization loop.
 2. **Perf Map 3D** — static repo scan → interactive 3D map → Top-3 fixes you can paste straight back into Autoresearch.
 3. **Doctor** — verify/install the tools, check simulator + a live Metro session, check a clean git tree, bootstrap `.metrognome/`.
+4. **Configurations** — view/edit `.metrognome/config.json` (commit mode, live report, N, k, budget).
 
 Choosing **Autoresearch** → present the five presets:
 `first-load` · `listing` · `memory-leaks` · `bundle-size` · `re-renders`.
+
+**Run options (asked once, pre-filled from `.metrognome/config.json`):** Immediately after the preset is chosen, ask two quick questions (use AskUserQuestion if available, else a numbered menu). Both are pre-filled from config so accepting defaults takes one keystroke:
+
+- **Commit mode** — `Commit each kept fix` (default: `per-iteration`) / `One commit at the end` / `Don't commit (leave staged for review)`.
+- **Live report** — `Off` (default) / `On — write a live HTML dashboard to .metrognome/report.html`.
+
+(N, k, and budget are only edited via **Configurations** — don't ask for them here.)
 
 **Skip the menu when intent is explicit.** Accept direct args and natural language:
 - `metrognome listing --target FeedScreen` → run that preset on that target.
@@ -50,23 +58,27 @@ The five presets — metric, what to drive, what to measure, which guide, candid
 
 Run this for an Autoresearch preset. It is a direct port of the web playbook's Measure→Diagnose→Apply→Re-measure→Keep/Revert, hardened with N-run variance control and git gating.
 
-1. **Preflight (Doctor).** Tools present; a Metro session is live; **the git tree is clean** (git-as-memory needs a clean baseline — refuse to run dirty, offer to stash/commit first); then **load `.metrognome/perf-memory.md`** to prime known hotspots and skip routes already proven to revert here.
+1. **Preflight (Doctor).** Tools present; a Metro session is live; **the git tree is clean** (git-as-memory needs a clean baseline — refuse to run dirty, offer to stash/commit first); then **load `.metrognome/perf-memory.md`** to prime known hotspots and skip routes already proven to revert here. Record `<baseline-sha>` (`git rev-parse HEAD`) — needed for the commit-mode transform at end of run. Load `.metrognome/config.json` for `commitMode`, `liveReport`, `runs`, `k`, `budget`.
 2. **Baseline.** Run the preset's measurement **N times** (default N=5; discard one warmup run). Compute **mean ± stddev** with `scripts/stats.mjs`. Open an Experiment Ledger entry (`assets/ledger.template.md` → `.metrognome/ledger/<timestamp>-<preset>.md`).
 3. **Diagnose.** Consult the preset's `react-native-best-practices` guide. Identify the **single dominant bottleneck**. Isolate one variable — **never stack fixes**.
 4. **Propose + apply.** Apply **one atomic** candidate fix from the preset's catalog. Nothing else.
 5. **Re-measure.** Identical N-run protocol.
 6. **Gate.** Decide with `scripts/stats.mjs` (see `references/measurement.md`):
    `keep ⇔ improvement > max(min_effect, k · pooled_stddev)`, k≈2, direction per metric (lower-is-better for TTI/jank/RAM/bytes/commits; higher-is-better for FPS).
-   - **KEEP** → `git add -A && git commit` with a message stating the measured delta (e.g. `perf(listing): getItemLayout on FeedScreen — jank 18→4 dropped frames (-78%, n=5)`).
+   - **KEEP** → `git add -A && git commit` with a message stating the measured delta (e.g. `perf(listing): getItemLayout on FeedScreen — jank 18→4 dropped frames (-78%, n=5)`). This per-iteration commit is **always made** — it is the revert isolation mechanism (step 6 REVERT below depends on it).
    - **REVERT** → `git restore .` / `git checkout -- .`. The change was indistinguishable from jitter; do not keep it.
-   Record KEPT/REVERTED in the Ledger with **both distributions**.
+   Record KEPT/REVERTED in the Ledger with **both distributions**. If `liveReport` is on, write `.metrognome/run-state.json` (see schema below) and call `node build_run_report.mjs run-state.json --out .metrognome/report.html`.
 7. **Loop.** Next hypothesis until the budget is exhausted or no remaining fix clears the gate.
-8. **Report.** Summarize the Ledger and the resulting commits. Distill each kept/reverted result into **one line** in `.metrognome/perf-memory.md`.
+8. **End-of-run commit transform.** Apply the chosen `commitMode`:
+   - `per-iteration` (default) — leave the per-iteration commits as-is. Nothing to do.
+   - `one-commit` — `git reset --soft <baseline-sha>` then `git commit -m "perf(<preset>): <net-summary> (<n> iterations)"`. All kept changes land in one commit.
+   - `no-commit` — `git reset --soft <baseline-sha>`. All kept changes are **staged but uncommitted** for the user to review, amend, and commit when ready.
+9. **Report.** Summarize the Ledger and the resulting commits. Distill each kept/reverted result into **one line** in `.metrognome/perf-memory.md`.
 
-**Iron rules** (why they matter):
+**Discipline rules** (why they matter):
 - *One variable at a time.* Stacked fixes make the gate meaningless — you can't attribute the delta.
 - *Never record an unmeasured fix.* A change with no before/after distribution is folklore, not a result.
-- *Clean tree, atomic commits.* The git history IS the experiment log; auto-revert depends on it.
+- *Clean tree, per-iteration commits (internal).* The per-iteration commit is what makes `git restore .` safe. `commitMode` shapes the *final* history — it never removes the internal per-iteration commits until end of run.
 
 ## Locating the bundled scripts
 
@@ -106,7 +118,7 @@ Use Doctor before any device loop, and to set a repo up the first time. Checks +
   install the `react-native-best-practices` agent-skill from `callstackincubator/agent-skills`.
 - **Metro live?** Confirm a Metro/Expo dev server is running and a device/simulator is attached (`agent-device` can list devices). metro-mcp needs a live CDP session to return real data.
 - **Clean git tree?** `git status --porcelain` must be empty before an Autoresearch run.
-- **Bootstrap `.metrognome/`** in the target repo on first run: create `.metrognome/perf-memory.md` (from the header in `references/memory.md`), `.metrognome/ledger/`, `.metrognome/archive/`. These are committed **with the app** so the team inherits the accumulated knowledge.
+- **Bootstrap `.metrognome/`** in the target repo on first run: create `.metrognome/perf-memory.md` (from the header in `references/memory.md`), `.metrognome/config.json` (default settings), `.metrognome/ledger/`, `.metrognome/archive/`, and `.metrognome/.gitignore` (excludes `report.html` and `run-state.json` — generated artifacts). The memory + config + ledger are committed **with the app** so the team inherits the accumulated knowledge.
 
 If metro-mcp is noisy when no Metro session exists, prefer launching it on demand here instead of always-on. (This degradation behavior is unverified offline — confirm against a live app.)
 
@@ -122,6 +134,42 @@ Across sessions, metrognome builds up a terse per-repo log of every perf gap it 
 
 Format, read/append/compaction rules, and examples are in **`references/memory.md`**. The bundled `UserPromptSubmit` hook nudges you to consult + update the memory when a perf-related prompt lands in a `.metrognome/`-tracked repo — the hook reminds; this skill does the work.
 
+## Configurations (menu item 4)
+
+Read `.metrognome/config.json` and display each key with its current value and valid options. Let the user edit any field, then write the file back. If `config.json` is absent, bootstrap it with defaults (same as Doctor `--init` would do).
+
+Config keys:
+
+| Key | Default | Options |
+|---|---|---|
+| `commitMode` | `per-iteration` | `per-iteration` · `one-commit` · `no-commit` |
+| `liveReport` | `false` | `true` · `false` |
+| `openReport` | `true` | `true` · `false` (only relevant when `liveReport` is `true`) |
+| `runs` | `5` | integer ≥ 2 |
+| `warmupDiscard` | `1` | integer ≥ 0 |
+| `k` | `2` | float ≥ 1 |
+| `budget` | `6` | integer ≥ 0 (0 = run until no fix clears the gate) |
+
+## run-state.json schema (written by the loop when `liveReport` is on)
+
+```json
+{
+  "preset": "listing", "target": "FeedScreen", "status": "running",
+  "startedAt": "2026-06-02T18:00:00Z", "unit": "ms", "direction": "lower",
+  "baseline": { "mean": 1190, "std": 12, "runs": 4 },
+  "iterations": [
+    { "n": 1, "hypothesis": "getItemLayout", "guide": "js/optimizing-flatlist",
+      "change": "Added getItemLayout to FeedScreen FlatList",
+      "candidate": { "mean": 985, "std": 9, "runs": 4 },
+      "decision": "KEEP", "delta": "-205ms (-17%)", "noiseBand": 24, "commit": "abc1234" }
+  ],
+  "netDelta": "-205ms (-17%)", "commits": ["abc1234"]
+}
+```
+
+Rebuild the live report after each iteration: `node build_run_report.mjs .metrognome/run-state.json --out .metrognome/report.html`.
+If `openReport` is `true`, open `report.html` once at the start of the run (it auto-refreshes every 3 seconds).
+
 ## Ledger vs Memory (don't confuse them)
 
 - **Experiment Ledger** = per-run, verbose, reproducible. One file per run in `.metrognome/ledger/`. Template: `assets/ledger.template.md`.
@@ -134,3 +182,6 @@ Format, read/append/compaction rules, and examples are in **`references/memory.m
 - `references/measurement.md` — N-run variance protocol, the gate math, why single samples lie.
 - `references/perf-map.md` — detectors, scoring, signal-vs-noise gating, Top-3 emission format.
 - `references/memory.md` — Performance Memory entry format, read/append/compaction policy.
+- `.metrognome/config.json` — per-repo settings (commit mode, live report, N, k, budget). Edited via **Configurations** menu.
+- `assets/report.template.html` + `scripts/build_run_report.mjs` — live progress dashboard (written when `liveReport` is on).
+- `.metrognome/run-state.json` — loop writes this after each iteration (gitignored); drives the live report.

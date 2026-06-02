@@ -37,13 +37,38 @@ const PERF_MEMORY_HEADER = (name) => `# Performance Memory — ${name}
 <!-- entries below, newest first -->
 `;
 
+const DEFAULT_CONFIG = {
+  commitMode: 'per-iteration', // "per-iteration" | "one-commit" | "no-commit"
+  liveReport: false,           // write/refresh .metrognome/report.html during the run
+  openReport: true,            // auto-open report.html when liveReport is on
+  runs: 5,                     // N measurement runs per iteration
+  warmupDiscard: 1,            // warm-up runs to discard
+  k: 2,                        // gate noise multiplier
+  budget: 6,                   // max iterations per run (0 = run until no fix clears gate)
+};
+
+const GITIGNORE_CONTENT = `# metrognome — generated run artifacts (not committed with the app)
+report.html
+run-state.json
+`;
+
+
 function bootstrap() {
   const dir = path.join(repo, '.metrognome');
   fs.mkdirSync(path.join(dir, 'ledger'), { recursive: true });
   fs.mkdirSync(path.join(dir, 'archive'), { recursive: true });
+
   const mem = path.join(dir, 'perf-memory.md');
   if (!fs.existsSync(mem)) fs.writeFileSync(mem, PERF_MEMORY_HEADER(path.basename(repo)));
-  console.log(`  bootstrapped ${path.relative(repo, dir) || '.metrognome'}/ (perf-memory.md, ledger/, archive/)`);
+
+  const cfg = path.join(dir, 'config.json');
+  if (!fs.existsSync(cfg)) fs.writeFileSync(cfg, JSON.stringify(DEFAULT_CONFIG, null, 2) + '\n');
+
+  const gi = path.join(dir, '.gitignore');
+  if (!fs.existsSync(gi)) fs.writeFileSync(gi, GITIGNORE_CONTENT);
+
+  console.log(`  bootstrapped ${path.relative(repo, dir) || '.metrognome'}/ (perf-memory.md, config.json, ledger/, archive/)`);
+  console.log(`  .metrognome/.gitignore created — report.html and run-state.json are gitignored`);
 }
 
 function main() {
@@ -78,9 +103,18 @@ function main() {
   console.log(`  ${isRN ? ok(true) : warn} looks like a React Native / Expo app`);
 
   const mgExists = fs.existsSync(path.join(repo, '.metrognome'));
-  if (mgExists) console.log(`  ${ok(true)} .metrognome/ workspace present`);
-  else if (doInit) { bootstrap(); }
-  else console.log(`  ${warn} .metrognome/ not found — run: node doctor.mjs --init  (creates the per-repo memory + ledger)`);
+  if (mgExists) {
+    console.log(`  ${ok(true)} .metrognome/ workspace present`);
+    const cfgExists = fs.existsSync(path.join(repo, '.metrognome', 'config.json'));
+    if (!cfgExists) {
+      const cfg = path.join(repo, '.metrognome', 'config.json');
+      fs.writeFileSync(cfg, JSON.stringify(DEFAULT_CONFIG, null, 2) + '\n');
+      console.log(`  ${ok(true)} .metrognome/config.json created with defaults`);
+    } else {
+      console.log(`  ${ok(true)} .metrognome/config.json present`);
+    }
+  } else if (doInit) { bootstrap(); }
+  else console.log(`  ${warn} .metrognome/ not found — run: node doctor.mjs --init  (creates the per-repo memory, config.json, ledger)`);
 
   console.log(`\n  Live checks you must do against the running app (not testable here):`);
   console.log(`    - a Metro/Expo dev server is running`);

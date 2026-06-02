@@ -1,7 +1,7 @@
 {
   "name": "metrognome",
-  "version": "0.1.0",
-  "description": "Autonomous, scientific React Native performance optimization. Orchestrates Callstack's metro-mcp, agent-device, agent-react-devtools, and react-native-best-practices into one propose -> measure -> keep/revert loop with git-as-memory, metric-gated commits, an interactive 3D Perf Map, and an auto-developing per-repo performance memory.",
+  "version": "0.2.0",
+  "description": "Autonomous, scientific React Native performance optimization. Orchestrates Callstack's metro-mcp, agent-device, agent-react-devtools, and react-native-best-practices into one propose -> measure -> keep/revert loop. Features: configurable commit mode, opt-in live HTML run report, interactive 3D Perf Map (light theme), and per-repo performance memory.",
   "author": {
     "name": "Xavier"
   },
