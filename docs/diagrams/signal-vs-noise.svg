@@ -29,8 +29,6 @@
   <!-- layer 2: severity weighting -->
   <text x="400" y="158" text-anchor="middle"
     font-family="-apple-system,'SF Pro Text',sans-serif" font-size="12" fill="#475569">① severity weights</text>
-  <text x="400" y="176" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="10.5" fill="#94a3b8">CRITICAL ×10  ·  HIGH ×5  ·  MEDIUM ×1.5  ·  LOW ×0.4</text>
 
   <!-- separator -->
   <line x1="232" y1="192" x2="568" y2="192" stroke="rgba(15,23,42,0.08)" stroke-width="1"/>
@@ -81,11 +79,6 @@
   <text x="140" y="236" text-anchor="middle"
     font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11.5" fill="#94a3b8">constantly</text>
 
-  <!-- bottom note -->
-  <text x="400" y="400" text-anchor="middle"
-    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11" fill="#94a3b8">Tuning constants live in perf_scan.mjs CONFIG block — never tune against the fixture app.</text>
-  <text x="400" y="420" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="10.5" fill="#94a3b8">node size = perf debt  ·  color = max severity  ·  click → flaw + guide</text>
 
   <rect x="0" y="0" width="4" height="440" fill="#16a34a"/>
 </svg>
