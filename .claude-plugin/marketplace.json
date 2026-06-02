@@ -1,0 +1,15 @@
+{
+  "name": "metrognome",
+  "owner": {
+    "name": "Xavier",
+    "email": "xavi-999@users.noreply.github.com"
+  },
+  "plugins": [
+    {
+      "name": "metrognome",
+      "source": "./",
+      "version": "0.1.0",
+      "description": "Autonomous, scientific React Native performance optimization - one propose -> measure -> keep/revert loop over Callstack's RN AI tooling, with a 3D Perf Map and a per-repo performance memory."
+    }
+  ]
+}
