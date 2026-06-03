@@ -4,7 +4,7 @@
 
 <!-- ORIGIN: Xavier to supply — 2–3 sentences on why you built this. -->
 
-React Native performance tooling is powerful but scattered — each tool knows one thing, nothing shares context between sessions, and there's no gate between "this might help" and "this actually helped." metrognome routes each measurement to the right Callstack tool and runs a loop with a real gate: one fix at a time, measured N times, kept only if the gain clears the noise — else reverted. Git is the experiment log; kept changes are metric-gated and the final commit shape is configurable.
+React Native performance tooling is powerful but scattered — each tool knows one thing, nothing shares context between sessions, and there's no gate between "this might help" and "this actually helped." metrognome routes each measurement to the right tool and runs a loop with a real gate: one fix at a time, measured N times, kept only if the gain clears the noise — else reverted. Git is the experiment log; kept changes are metric-gated and the final commit shape is configurable.
 
 ![metrognome 3D Perf Map — white canvas, green chrome, node size = perf debt, color = severity.](docs/perf-map.png)
 
@@ -14,9 +14,9 @@ React Native performance tooling is powerful but scattered — each tool knows o
 
 metrognome routes each measurement to the right tool, then owns the loop, the gate, the ledger, the memory, and the map:
 
-![metrognome orchestration — the conductor and its four Callstack tools](docs/diagrams/orchestration.png)
+![metrognome orchestration — the conductor, metro-mcp, and three Callstack tools](docs/diagrams/orchestration.png)
 
-All four are independent open-source projects by **Callstack** — metrognome does not bundle or modify them, it conducts them. See [Attribution](#attribution).
+agent-device, agent-react-devtools, and react-native-best-practices are independent open-source projects by **Callstack**; metro-mcp is an independent open-source project. metrognome does not bundle or modify them, it conducts them. See [Attribution](#attribution).
 
 ---
 
@@ -174,7 +174,7 @@ In the target RN repo, Doctor bootstraps:
 
 ## Attribution
 
-metrognome orchestrates these independent open-source tools by **Callstack** and its contributors. They are not bundled or modified here; all trademarks and copyrights belong to their owners.
+metrognome orchestrates these independent open-source tools. agent-device, agent-react-devtools, and react-native-best-practices are by **Callstack**; metro-mcp is by its own contributors. None are bundled or modified here; all trademarks and copyrights belong to their owners.
 
 - **metro-mcp** — MCP server bridging Metro via CDP — https://www.npmjs.com/package/metro-mcp
 - **agent-device** — device-driving CLI — https://www.npmjs.com/package/agent-device

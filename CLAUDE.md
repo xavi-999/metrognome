@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-metrognome is a **Claude Code plugin** for React Native performance optimization. This repo IS the plugin itself — not an RN app that uses it. The plugin, once installed, adds a `/metrognome` command to any RN project and orchestrates Callstack's tooling into a scientific propose→measure→keep/revert loop.
+metrognome is a **Claude Code plugin** for React Native performance optimization. This repo IS the plugin itself — not an RN app that uses it. The plugin, once installed, adds a `/metrognome` command to any RN project and orchestrates metro-mcp and Callstack's tooling (agent-device, agent-react-devtools, react-native-best-practices) into a scientific propose→measure→keep/revert loop.
 
 ## Commands
 

@@ -5,7 +5,7 @@ description: Autonomous, scientific React Native & Expo performance optimization
 
 # metrognome
 
-metrognome routes React Native performance work through Callstack's tools and enforces a measurement discipline: propose one fix → measure N times → keep it only if the gain beats the noise, else revert. Git is the internal memory; per-iteration commits enable instant auto-revert, and the final commit shape is configurable (per-iteration · one commit · leave staged).
+metrognome routes React Native performance work through metro-mcp and Callstack's tools and enforces a measurement discipline: propose one fix → measure N times → keep it only if the gain beats the noise, else revert. Git is the internal memory; per-iteration commits enable instant auto-revert, and the final commit shape is configurable (per-iteration · one commit · leave staged).
 
 It's the React Native twin of the web `webapp-perf-playbook`. Same spine: delegate measurement, own the catalog + glue loop, never record an unmeasured fix.
 

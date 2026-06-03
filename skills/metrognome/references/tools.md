@@ -1,6 +1,6 @@
 # Tools & Signal Routing
 
-metrognome delegates all measurement to four Callstack tools. This file is the **cheatsheet + routing table**. Command surfaces drift between releases — when something doesn't match, the installed CLI help is the source of truth (`agent-device help workflow`, `agent-react-devtools --help`) and the live MCP tool list for metro-mcp. **This is the single file to update before a pitch or when a tool version bumps.** (Verified against: metro-mcp 0.11.x, agent-device 0.16.12, agent-react-devtools 0.4.0. RN connect-import guidance corrected 2026-06-03.)
+metrognome delegates all measurement to four tools — metro-mcp plus three from Callstack (agent-device, agent-react-devtools, react-native-best-practices). This file is the **cheatsheet + routing table**. Command surfaces drift between releases — when something doesn't match, the installed CLI help is the source of truth (`agent-device help workflow`, `agent-react-devtools --help`) and the live MCP tool list for metro-mcp. **This is the single file to update before a pitch or when a tool version bumps.** (Verified against: metro-mcp 0.11.x, agent-device 0.16.12, agent-react-devtools 0.4.0. RN connect-import guidance corrected 2026-06-03.)
 
 ## Routing — which tool for which signal
 

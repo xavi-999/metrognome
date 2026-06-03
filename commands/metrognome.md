@@ -4,7 +4,7 @@ description: React Native performance optimization. Open the metrognome menu (Au
 argument-hint: "[first-load|listing|memory-leaks|bundle-size|re-renders] [--target <Screen/Component>] | <natural-language goal>"
 ---
 
-Use the **metrognome** skill (`skills/metrognome/SKILL.md`) to handle this request. metrognome routes React Native performance work through Callstack's tooling (metro-mcp, agent-device, agent-react-devtools, react-native-best-practices) and runs a scientific propose -> measure -> keep/revert loop, builds an interactive 3D Perf Map, and maintains a per-repo performance memory.
+Use the **metrognome** skill (`skills/metrognome/SKILL.md`) to handle this request. metrognome routes React Native performance work through metro-mcp and Callstack's tooling (agent-device, agent-react-devtools, react-native-best-practices) and runs a scientific propose -> measure -> keep/revert loop, builds an interactive 3D Perf Map, and maintains a per-repo performance memory.
 
 Read `${CLAUDE_PLUGIN_ROOT}/skills/metrognome/SKILL.md` now and follow it.
 
