@@ -62,6 +62,6 @@ Returns JSON with both distributions, the improvement (absolute + %), the pooled
 
 - **KEEP** → atomic `git commit` whose message carries the measured delta and n, e.g.
   `perf(listing): getItemLayout on FeedScreen — jank 18→4 frames (−78%, n=4)`.
-- **REVERT** → `git restore .`; log it as REVERTED in the Ledger with both distributions so the same dead-end isn't retried (and record it in `perf-memory.md`).
+- **REVERT** → restore each `touched` file from its pre-fix snapshot (the working-tree state captured before the fix was applied); log it as REVERTED in the Ledger with both distributions so the same dead-end isn't retried (and record it in `perf-memory.md`). Pre-existing user edits (`preExistingDirty`) are never touched.
 
 Record **both full distributions** in the Ledger either way — a reverted result is still data, and it's what stops a future run from re-trying a proven-neutral fix.

@@ -16,6 +16,6 @@ Routing:
 - **Natural language** (e.g. "fix jank on the feed list", "the app is slow to start") -> map it to the closest preset/target and confirm before running the loop.
 - **`config` or `configurations`** -> open the Configurations menu (view/edit `.metrognome/config.json`).
 
-Before doing anything else, run the Doctor preflight described in SKILL.md (tools present, Metro session live, clean git tree, load the repo's performance memory).
+Before doing anything else, run the Doctor preflight described in SKILL.md (tools present, Metro session live, auto-fix setup, metrognome scopes git to its own changes — pre-existing user edits are left untouched, load the repo's performance memory).
 
 Note: if running scripts outside a Claude session, ensure `npm install` has been run in the plugin root first.

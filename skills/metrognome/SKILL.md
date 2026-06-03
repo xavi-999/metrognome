@@ -33,7 +33,7 @@ Bare invocation → present the **top menu**:
 
 1. **Autoresearch** — pick a preset, run the autonomous optimization loop.
 2. **Perf Map 3D** — static repo scan → interactive 3D map → Top-3 fixes you can paste straight back into Autoresearch.
-3. **Doctor** — verify/install the tools, check simulator + a live Metro session, check a clean git tree, bootstrap `.metrognome/`.
+3. **Doctor** — verify/install the tools, auto-establish a live app session (probe → relaunch via agent-device → numbered manual fallback), scope git to its own changes, bootstrap `.metrognome/`.
 4. **Configurations** — view/edit `.metrognome/config.json` (commit mode, live report, N, k, budget).
 
 Choosing **Autoresearch** → present the five presets:
@@ -58,15 +58,27 @@ The five presets — metric, what to drive, what to measure, which guide, candid
 
 Run this for an Autoresearch preset. It is a direct port of the web playbook's Measure→Diagnose→Apply→Re-measure→Keep/Revert, hardened with N-run variance control and git gating.
 
-1. **Preflight (Doctor).** Tools present; a Metro session is live; **the git tree is clean** (git-as-memory needs a clean baseline — refuse to run dirty, offer to stash/commit first); then **load `.metrognome/perf-memory.md`** to prime known hotspots and skip routes already proven to revert here. Record `<baseline-sha>` (`git rev-parse HEAD`) — needed for the commit-mode transform at end of run. Load `.metrognome/config.json` for `commitMode`, `liveReport`, `runs`, `k`, `budget`.
+1. **Preflight (Doctor + auto-setup).** Run `doctor.mjs` (or its inline checks). Then:
+   - **Bootstrap:** ensure `.metrognome/` exists (auto-create if absent; never prompt).
+   - **Scoped-tracking init:** capture `preExistingDirty` = paths from `git status --porcelain` before metrognome touches anything. These paths will never be staged or reverted by metrognome regardless of what happens next.
+   - **Consolidated run-start prompt** (see below) — surface detected setup items + commit mode + live report in a **single** AskUserQuestion (one prompt, three groups). Wait for the response, then proceed.
+   - **Auto-remediation** (if user chose "fix"): bring up environment (start Metro if not running; boot/attach an available simulator or device); **establish a live app session** (see sub-protocol below); start daemon (`agent-react-devtools start`); `agent-react-devtools wait --connected`; select the live Hermes target from `localhost:8081/json/list`; set metro-mcp `newArchitecture: true` if New Arch was detected. Only escalate to the user when the agent genuinely cannot proceed (see *When to ask* below).
+   - **Setup commit** (if `commitMode != no-commit`): after wiring, `git add <setup paths only — never preExistingDirty>` and commit as `chore(metrognome): setup workspace`. Then record `baselineSha = git rev-parse HEAD` (after setup mutations, so the loop's revert never touches infra).
+   - **Load memory and config:** read `.metrognome/perf-memory.md` to prime known hotspots; load `.metrognome/config.json` for `commitMode`, `liveReport`, `runs`, `k`, `budget`.
 2. **Baseline.** Run the preset's measurement **N times** (default N=5; discard one warmup run). Compute **mean ± stddev** with `scripts/stats.mjs`. Open an Experiment Ledger entry (`assets/ledger.template.md` → `.metrognome/ledger/<timestamp>-<preset>.md`).
 3. **Diagnose.** Consult the preset's `react-native-best-practices` guide. Identify the **single dominant bottleneck**. Isolate one variable — **never stack fixes**.
 4. **Propose + apply.** Apply **one atomic** candidate fix from the preset's catalog. Nothing else.
 5. **Re-measure.** Identical N-run protocol.
 6. **Gate.** Decide with `scripts/stats.mjs` (see `references/measurement.md`):
    `keep ⇔ improvement > max(min_effect, k · pooled_stddev)`, k≈2, direction per metric (lower-is-better for TTI/jank/RAM/bytes/commits; higher-is-better for FPS).
-   - **KEEP** → `git add -A && git commit` with a message stating the measured delta (e.g. `perf(listing): getItemLayout on FeedScreen — jank 18→4 dropped frames (-78%, n=5)`). This per-iteration commit is **always made** — it is the revert isolation mechanism (step 6 REVERT below depends on it).
-   - **REVERT** → `git restore .` / `git checkout -- .`. The change was indistinguishable from jitter; do not keep it.
+
+   Before applying any fix, snapshot the working-tree content of each file about to be changed (pre-fix state) and add them to `touched`. For files that are in both `touched` and `preExistingDirty`, capture the *user's* current version.
+
+   - **KEEP** (and `commitMode != no-commit`):
+     - Common case (`touched ∩ preExistingDirty == ∅`): `git add <touched paths>` then `git commit` with a message stating the measured delta (e.g. `perf(listing): getItemLayout on FeedScreen — jank 18→4 dropped frames (-78%, n=5)`). **Never `git add -A`.**
+     - Overlap edge case (`touched ∩ preExistingDirty != ∅`): `git stash push -- <overlap file>` to set aside the user's hunks, `git add <overlap file>` + commit metrognome's change, then `git stash pop` to restore the user's hunks on top. Scoped to the single conflicting file only.
+     This per-iteration commit is the revert isolation mechanism.
+   - **REVERT** → restore each `touched` file from its pre-fix snapshot. Pre-existing user edits in those files are preserved. The user's `preExistingDirty` state is intact.
    Record KEPT/REVERTED in the Ledger with **both distributions**. If `liveReport` is on, write `.metrognome/run-state.json` (see schema below) and call `node build_run_report.mjs run-state.json --out .metrognome/report.html`.
 7. **Loop.** Next hypothesis until the budget is exhausted or no remaining fix clears the gate.
 8. **End-of-run commit transform.** Apply the chosen `commitMode`:
@@ -78,7 +90,7 @@ Run this for an Autoresearch preset. It is a direct port of the web playbook's M
 **Discipline rules** (why they matter):
 - *One variable at a time.* Stacked fixes make the gate meaningless — you can't attribute the delta.
 - *Never record an unmeasured fix.* A change with no before/after distribution is folklore, not a result.
-- *Clean tree, per-iteration commits (internal).* The per-iteration commit is what makes `git restore .` safe. `commitMode` shapes the *final* history — it never removes the internal per-iteration commits until end of run.
+- *Scoped tracking — metrognome commits/reverts only its own files.* `git add <touched paths>` (never `git add -A`); REVERT restores from pre-fix snapshots. `preExistingDirty` paths are never staged or reverted. `commitMode` shapes the *final* history — it never removes the internal per-iteration commits until end of run.
 
 ## Locating the bundled scripts
 
@@ -109,20 +121,58 @@ Then: open `perf-map.html` (the `--open` flag does it; otherwise `open perf-map.
 
 The scoring, the ten detectors, and — critically — the **signal-vs-noise gating** (why most nodes stay grey) are documented in **`references/perf-map.md`**. The tuning constants live in `scripts/perf_scan.mjs`'s `CONFIG` block. If a scan lights up too much, raise the gate there — don't lower your standards in the report.
 
-## Doctor (preflight + setup)
+## Doctor (auto-setup — zero homework)
 
-Use Doctor before any device loop, and to set a repo up the first time. Checks + fixes:
+Doctor bootstraps a repo and detects what needs fixing; the skill agent then **performs all setup automatically**. The user receives **one consolidated prompt** (see below), not a checklist.
 
-- **Tools present?** `metro-mcp` is bundled (this plugin's `.mcp.json`). For the CLIs:
-  `npm i -g agent-device agent-react-devtools` (or run via `npx`). The Callstack knowledge base:
-  install the `react-native-best-practices` agent-skill from `callstackincubator/agent-skills`.
-- **Metro live?** Confirm a Metro/Expo dev server is running and a device/simulator is attached (`agent-device` can list devices). metro-mcp needs a live CDP session to return real data.
-- **Clean git tree?** `git status --porcelain` must be empty before an Autoresearch run.
-- **Bootstrap `.metrognome/`** in the target repo on first run: create `.metrognome/perf-memory.md` (from the header in `references/memory.md`), `.metrognome/config.json` (default settings), `.metrognome/ledger/`, `.metrognome/archive/`, and `.metrognome/.gitignore` (excludes `report.html` and `run-state.json` — generated artifacts). The memory + config + ledger are committed **with the app** so the team inherits the accumulated knowledge.
+**What Doctor detects (agent acts on):**
+- **Tools present?** `metro-mcp` is bundled (this plugin's `.mcp.json`). CLIs: `npx`-invocable; install globally with `npm i -g agent-device agent-react-devtools` for speed. The Callstack knowledge base: install the `react-native-best-practices` agent-skill from `callstackincubator/agent-skills`.
+- **Live app session** — doctor probes Metro (`localhost:${port}/json/list`, live Hermes targets) and the agent-react-devtools daemon (`agent-react-devtools status`, connected count). See "Establish a live app session" sub-protocol below. **React Native auto-connects to the daemon on port 8097 — no app code change needed.** Never add `import 'agent-react-devtools/connect'` to an RN entry point: it is web-only and crashes RN New Arch (see `references/tools.md`).
+- **New Arch** — detected from `app.json` / `app.config.*` `newArchEnabled` flag or RN version (0.76+ ships New Arch on by default). Agent sets metro-mcp `newArchitecture: true`.
+- **Pre-existing dirty files** — listed informational; metrognome will leave them untouched.
+- **Bootstrap `.metrognome/`** on first run: create `perf-memory.md`, `config.json` (defaults), `ledger/`, `archive/`, `.gitignore` (excludes `report.html` / `run-state.json`). The memory + config + ledger are committed with the app.
 
-If metro-mcp is noisy when no Metro session exists, prefer launching it on demand here instead of always-on. (This degradation behavior is unverified offline — confirm against a live app.)
+**Establish a live app session (sub-protocol — run after git-clean check, before baseline):**
 
-**On Expo / New Arch:** if metro-mcp's runtime calls (`evaluate_js`, profiler) time out, set the `newArchitecture: true` config flag in metro-mcp settings and close any RN DevTools frontends before retrying. The `listing` and `re-renders` presets degrade gracefully to the CDP-free path (agent-react-devtools + agent-device) — see `references/tools.md`.
+1. **Probe** — `get_connection_status` (metro-mcp) + `agent-react-devtools status`.
+   - Metro reachable AND ≥1 live Hermes target AND ≥1 agent-react-devtools connected → session OK, proceed. **Never relaunch a healthy session.**
+2. **Metro down** (rare) → run `doctor.mjs --launch-metro` (opens a new terminal with the detected start command, best-effort on macOS); poll `/json/list` until Metro answers (bounded timeout). If `--launch-metro` is unavailable or fails, print the exact start command and ask the user to run it.
+3. **Metro up but app session dead** (the observed case — `cdpConnected:false` or "0 connected" in `agent-react-devtools status`) → recover programmatically:
+   - Resolve the bundle id via `agent-device apps` or from metro-mcp `list_devices` (e.g. `com.metrognome.pulse`).
+   - `agent-device open <bundleId> --relaunch` (terminates + relaunches the app on the booted simulator/device).
+   - Re-probe: `agent-react-devtools wait --connected --timeout 30`.
+   - **Note:** `reload_app` does NOT revive a dead session — it only refreshes an already-live JS bundle. Calling it on a dead session is a no-op (confirmed: 3× no-op in testing). Only `--relaunch` or a manual app open revives it.
+4. **Auto-recovery unavailable or still dead** (agent-device absent, no booted simulator, headless device) → print **numbered, copy-pasteable** manual steps and wait:
+   > 1. Make sure your simulator/device is booted and your app is installed.
+   > 2. **Open/foreground the app now** — it must be running in the foreground for a live JS debug session.
+   > 3. (Physical Android) Run: `adb reverse tcp:8097 tcp:8097`
+   >
+   > Then re-check (`agent-react-devtools wait --connected`).
+
+**Environment bring-up (agent does, does not ask):**
+- Metro not running → run `doctor.mjs --launch-metro` or start it backgrounded (`npx expo start` / `npm start`).
+- No simulator/device attached → boot an available one and `agent-device open` the app.
+
+**Agent only asks the user when it genuinely cannot proceed:**
+- No simulator/device exists at all and creating one requires interactive setup (no Xcode/Android SDK, no AVD).
+- App isn't built/installed and producing the build requires interactive input the agent lacks (signing credentials, interactive native build prompt).
+- A user-owned RN DevTools/Fusebox browser window holds the single CDP slot **and** the chosen preset needs metro-mcp's runtime channel (`first-load`, `memory-leaks`). The agent cannot close a browser tab; this is a last resort.
+
+**CDP — do NOT open the JS Debugger:** The Hermes target is present on `localhost:8081/json/list` automatically once the app runs against Metro — no action required. Opening the RN DevTools / Fusebox frontend (e.g. Cmd+D → "Open JS Debugger") holds the **single CDP slot** (RN < 0.85) and blocks metro-mcp runtime calls. Never instruct the user to open the debugger. The `listing` and `re-renders` presets are CDP-free and do not hit this at all. See `references/tools.md`.
+
+**On Expo / New Arch:** set metro-mcp `newArchitecture: true` (auto-detected; see above). `listing` and `re-renders` degrade gracefully to the CDP-free path (agent-react-devtools + agent-device) — see `references/tools.md`. RN auto-connects to agent-react-devtools on port 8097; do not add the `connect` import.
+
+## Consolidated run-start prompt
+
+Present **one** AskUserQuestion (or a compact numbered menu if AskUserQuestion is unavailable) at run start, with up to three groups. Pre-fill from `.metrognome/config.json`; accepting defaults takes one action:
+
+| Group | Question | Options |
+|---|---|---|
+| **Blockers** *(only when setup items were detected)* | "Fix the detected setup items automatically and proceed?" | Yes, fix & proceed (default) · I'll fix manually, show me · Skip optional ones — run agent-device only |
+| **Commit mode** | "Commit shape?" | Commit each kept fix — `per-iteration` (default) · One commit at the end · Don't commit — leave staged |
+| **Live report** | "Live HTML dashboard?" | Off (default) · On — write `.metrognome/report.html` |
+
+After the response: run auto-remediation (if "fix" was chosen), then proceed to Baseline. Never present these questions across multiple separate prompts.
 
 ## Performance Memory
 

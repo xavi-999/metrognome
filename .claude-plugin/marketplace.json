@@ -8,7 +8,7 @@
     {
       "name": "metrognome",
       "source": "./",
-      "version": "0.1.0",
+      "version": "0.2.1",
       "description": "Autonomous, scientific React Native performance optimization - one propose -> measure -> keep/revert loop over Callstack's RN AI tooling, with a 3D Perf Map and a per-repo performance memory."
     }
   ]

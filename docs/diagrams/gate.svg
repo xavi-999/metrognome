@@ -4,89 +4,94 @@
       <stop offset="0%" stop-color="#f0fdf4"/>
       <stop offset="100%" stop-color="#ffffff"/>
     </linearGradient>
-    <!-- baseline distribution fill -->
-    <linearGradient id="base-fill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#94a3b8" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#94a3b8" stop-opacity="0.05"/>
-    </linearGradient>
-    <!-- candidate distribution fill — KEEP -->
-    <linearGradient id="keep-fill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#16a34a" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#16a34a" stop-opacity="0.05"/>
-    </linearGradient>
-  </defs>
-
-  <rect width="800" height="440" fill="url(#bg)"/>
-  <text x="400" y="42" text-anchor="middle"
-    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="13" font-weight="600"
-    letter-spacing="0.18em" fill="#94a3b8">THE GATE — HOW METROGNOME DECIDES KEEP VS REVERT</text>
-
-  <!-- axis line -->
-  <line x1="80" y1="300" x2="720" y2="300" stroke="rgba(15,23,42,0.12)" stroke-width="1.5"/>
-  <!-- axis label -->
-  <text x="400" y="324" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="11" fill="#94a3b8">metric value (ms · lower is better)</text>
-
-  <!-- baseline bell curve (approx via cubic bezier path) — centered ~420 -->
-  <path d="M 320 300 C 340 300, 360 260, 390 200 C 410 155, 430 155, 450 200 C 480 260, 500 300, 520 300"
-    fill="url(#base-fill)" stroke="#64748b" stroke-width="1.5"/>
-  <text x="420" y="175" text-anchor="middle"
-    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11.5"
-    fill="#64748b">baseline</text>
-  <text x="420" y="190" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="11" fill="#475569">1190 ms ± 12</text>
-
-  <!-- candidate bell curve — centered ~220 (big improvement) -->
-  <path d="M 120 300 C 140 300, 155 260, 180 200 C 200 155, 220 155, 240 200 C 265 260, 280 300, 300 300"
-    fill="url(#keep-fill)" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="210" y="175" text-anchor="middle"
-    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11.5"
-    fill="#16a34a">candidate</text>
-  <text x="210" y="190" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="11" fill="#16a34a">985 ms ± 9</text>
-
-  <!-- gate threshold line — at ~360 (baseline mean - noise band) -->
-  <line x1="360" y1="120" x2="360" y2="300" stroke="#ea580c" stroke-width="2"
-    stroke-dasharray="6,3"/>
-  <text x="362" y="114" text-anchor="start"
-    font-family="'SF Mono',monospace" font-size="10" fill="#ea580c">gate threshold</text>
-  <text x="362" y="128" text-anchor="start"
-    font-family="'SF Mono',monospace" font-size="10" fill="#ea580c">max(min_effect, k·σ)</text>
-
-  <!-- noise band bracket under baseline -->
-  <line x1="378" y1="316" x2="462" y2="316" stroke="#64748b" stroke-width="1"/>
-  <line x1="378" y1="310" x2="378" y2="322" stroke="#64748b" stroke-width="1"/>
-  <line x1="462" y1="310" x2="462" y2="322" stroke="#64748b" stroke-width="1"/>
-  <text x="420" y="334" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="10" fill="#64748b">noise band (k·pooledσ ≈ 24ms)</text>
-
-  <!-- delta arrow from candidate peak to baseline peak -->
-  <line x1="210" y1="152" x2="388" y2="152" stroke="#0f172a" stroke-width="1.5"
-    marker-end="url(#arr-dark)"/>
-  <text x="299" y="144" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="11" fill="#0f172a">-205ms (-17%)</text>
-  <defs>
     <marker id="arr-dark" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
       <path d="M0,0 L0,6 L7,3 z" fill="#0f172a"/>
     </marker>
   </defs>
 
-  <!-- KEEP verdict -->
-  <rect x="550" y="140" width="180" height="72" rx="12"
+  <rect width="800" height="440" fill="url(#bg)"/>
+  <rect x="0" y="0" width="4" height="440" fill="#16a34a"/>
+
+  <!-- title -->
+  <text x="400" y="38" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="13" font-weight="600"
+    letter-spacing="0.18em" fill="#94a3b8">THE GATE — KEEP ONLY IF THE GAIN CLEARS THE NOISE</text>
+
+  <!-- y-axis spine and zero line -->
+  <line x1="148" y1="55" x2="148" y2="368" stroke="rgba(15,23,42,0.10)" stroke-width="1"/>
+  <line x1="143" y1="365" x2="720" y2="365" stroke="rgba(15,23,42,0.15)" stroke-width="1.5"/>
+
+  <!-- ── baseline bar (grey) ──
+       1190 ms × 0.2580 px/ms = 307 px tall → top at y = 365 − 307 = 58 -->
+  <rect x="160" y="58" width="140" height="307" rx="3"
+    fill="#94a3b8" fill-opacity="0.50" stroke="#64748b" stroke-width="1.5"/>
+  <!-- value label inside bar, near top -->
+  <text x="230" y="82" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="12" font-weight="600" fill="#1e293b">1190 ms</text>
+  <text x="230" y="97" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="10" fill="#475569">± 12</text>
+  <!-- category label near bar bottom -->
+  <text x="230" y="350" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11" fill="#475569">baseline</text>
+  <!-- whisker ±12 ms = ±3.1 px -->
+  <line x1="230" y1="54.9" x2="230" y2="61.1" stroke="#64748b" stroke-width="1" opacity="0.65"/>
+  <line x1="222" y1="54.9" x2="238" y2="54.9" stroke="#64748b" stroke-width="1" opacity="0.65"/>
+  <line x1="222" y1="61.1" x2="238" y2="61.1" stroke="#64748b" stroke-width="1" opacity="0.45"/>
+
+  <!-- noise band sliver: y=58 (1190 ms, bar top) → y=64 (1166 ms, gate threshold) = 24 ms = 6.2 px -->
+  <rect x="143" y="58" width="577" height="6.2"
+    fill="rgba(234,88,12,0.07)"/>
+
+  <!-- gate threshold line at y=64 (1166 ms) — the crux -->
+  <line x1="143" y1="64.2" x2="720" y2="64.2" stroke="#ea580c" stroke-width="1.5"
+    stroke-dasharray="6,3"/>
+
+  <!-- noise band label, right of gate line -->
+  <text x="602" y="57" text-anchor="start"
+    font-family="'SF Mono',monospace" font-size="10" fill="#ea580c">noise band</text>
+  <text x="602" y="71" text-anchor="start"
+    font-family="'SF Mono',monospace" font-size="10" fill="#ea580c">k·σ ≈ 24 ms</text>
+
+  <!-- ── candidate bar (green) ──
+       985 ms × 0.2580 px/ms = 254 px tall → top at y = 365 − 254 = 111 -->
+  <rect x="420" y="111" width="140" height="254" rx="3"
+    fill="#16a34a" fill-opacity="0.65" stroke="#15803d" stroke-width="1.5"/>
+  <!-- value label inside bar, near top -->
+  <text x="490" y="134" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="12" font-weight="600" fill="white">985 ms</text>
+  <text x="490" y="150" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="10" fill="#dcfce7">± 9</text>
+  <!-- category label near bar bottom -->
+  <text x="490" y="350" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="11" fill="#dcfce7">candidate</text>
+  <!-- whisker ±9 ms = ±2.3 px -->
+  <line x1="490" y1="108.7" x2="490" y2="113.3" stroke="#15803d" stroke-width="1" opacity="0.65"/>
+  <line x1="482" y1="108.7" x2="498" y2="108.7" stroke="#15803d" stroke-width="1" opacity="0.65"/>
+  <line x1="482" y1="113.3" x2="498" y2="113.3" stroke="#15803d" stroke-width="1" opacity="0.45"/>
+
+  <!-- ── delta bracket: baseline top (y=58) → candidate top (y=111) = 205 ms ── -->
+  <line x1="355" y1="58" x2="355" y2="111" stroke="#0f172a" stroke-width="1" opacity="0.55"/>
+  <line x1="348" y1="58"  x2="362" y2="58"  stroke="#0f172a" stroke-width="1" opacity="0.55"/>
+  <line x1="348" y1="111" x2="362" y2="111" stroke="#0f172a" stroke-width="1" opacity="0.55"/>
+  <text x="368" y="80" text-anchor="start"
+    font-family="'SF Mono',monospace" font-size="12" font-weight="600" fill="#0f172a">−205 ms</text>
+  <text x="368" y="96" text-anchor="start"
+    font-family="'SF Mono',monospace" font-size="10.5" fill="#475569">(−17%)</text>
+
+  <!-- ── KEEP badge ── -->
+  <rect x="590" y="140" width="162" height="50" rx="10"
     fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
-  <text x="640" y="168" text-anchor="middle"
+  <text x="671" y="163" text-anchor="middle"
     font-family="-apple-system,'SF Pro Text',sans-serif" font-size="16" font-weight="700"
     fill="#16a34a">✓ KEEP</text>
-  <text x="640" y="186" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="10.5" fill="#475569">205ms &gt; gate (24ms)</text>
-  <text x="640" y="202" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="10.5" fill="#475569">→ git commit</text>
+  <text x="671" y="181" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="10" fill="#475569">205 ms &gt; gate (24 ms)</text>
+
+  <!-- axis label -->
+  <text x="400" y="384" text-anchor="middle"
+    font-family="-apple-system,'SF Pro Text',sans-serif" font-size="10.5" fill="#94a3b8">ms — lower is better</text>
 
   <!-- formula -->
-  <text x="400" y="390" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="13" fill="#0f172a">KEEP  ⟺  improvement  &gt;  max(min_effect,  k · pooled_σ)</text>
-  <text x="400" y="412" text-anchor="middle"
-    font-family="'SF Mono',monospace" font-size="11" fill="#94a3b8">k ≈ 2  ·  default N = 5 runs  ·  1 warm-up discarded</text>
-
-  <rect x="0" y="0" width="4" height="440" fill="#16a34a"/>
+  <text x="400" y="418" text-anchor="middle"
+    font-family="'SF Mono',monospace" font-size="12.5" fill="#0f172a">KEEP  ⟺  gain &gt; max(min_effect,  k · σ)</text>
 </svg>

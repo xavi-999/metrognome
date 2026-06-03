@@ -21,17 +21,24 @@
   <!-- left accent bar -->
   <rect x="0" y="0" width="4" height="320" fill="#16a34a"/>
 
-  <!-- equalizer mark — 4 bars, green ramp, centered on left zone -->
-  <g transform="translate(96, 104)">
-    <!-- bar 1 — short left -->
-    <rect x="0"  y="58" width="14" height="52" rx="4" fill="#22c55e" opacity="0.5"/>
-    <!-- bar 2 -->
-    <rect x="20" y="36" width="14" height="74" rx="4" fill="#22c55e" opacity="0.72"/>
-    <!-- bar 3 — tallest -->
-    <rect x="40" y="0"  width="14" height="110" rx="4" fill="url(#barGrad)"/>
-    <!-- bar 4 -->
-    <rect x="60" y="28" width="14" height="82" rx="4" fill="#22c55e" opacity="0.62"/>
-  </g>
+  <!-- gnome mark: metronome triangle (hat) + pendulum + face elements -->
+  <!-- hat — tall isosceles triangle = metronome body + gnome's pointed hat -->
+  <polygon points="128,58 78,202 178,202" fill="url(#barGrad)" stroke="#15803d" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- scale ticks — metronome calibration lines (subtle, inside hat) -->
+  <line x1="119" y1="103" x2="137" y2="103" stroke="white" stroke-width="1.5" opacity="0.4"/>
+  <line x1="107" y1="140" x2="149" y2="140" stroke="white" stroke-width="1.5" opacity="0.4"/>
+  <!-- pendulum pivot dot near apex -->
+  <circle cx="128" cy="76" r="3.5" fill="#052e16"/>
+  <!-- pendulum needle — from pivot, angled 15° right of vertical (mid-swing) -->
+  <line x1="128" y1="76" x2="155" y2="178" stroke="#052e16" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- pendulum bob -->
+  <circle cx="155" cy="178" r="6" fill="#052e16"/>
+  <!-- hat brim — wider than triangle base, darker green -->
+  <rect x="70" y="200" width="116" height="14" rx="5" fill="#15803d" stroke="#166534" stroke-width="0.5"/>
+  <!-- beard — geometric angular shape below brim -->
+  <polygon points="100,214 156,214 143,260 128,278 113,260" fill="#d1fae5" stroke="#86efac" stroke-width="1" stroke-linejoin="round"/>
+  <!-- nose — small rounded ellipse (classic gnome tell) -->
+  <ellipse cx="128" cy="224" rx="9" ry="7" fill="#94a3b8" opacity="0.75"/>
 
   <!-- wordmark — metro(text) + g(green accent) + nome(text) -->
   <!-- Using outlined paths for cross-platform consistency -->
