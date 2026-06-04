@@ -57,11 +57,16 @@
     font-size="88" font-weight="700" letter-spacing="-3"
     fill="#0f172a">nome</text>
 
-  <!-- tagline -->
-  <text x="208" y="226"
+  <!-- hero slogan — the positioning line -->
+  <text x="208" y="222"
     font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif"
-    font-size="18" font-weight="400" letter-spacing="0.5"
-    fill="#475569">propose  →  measure  →  keep / revert</text>
+    font-size="24" font-weight="600" letter-spacing="0"
+    xml:space="preserve"><tspan fill="#0f172a">The autonomous </tspan><tspan fill="#16a34a">performance</tspan><tspan fill="#0f172a"> engineer for React Native</tspan></text>
+  <!-- mechanism line — small, dim secondary print -->
+  <text x="208" y="250"
+    font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif"
+    font-size="14" font-weight="400" letter-spacing="0.5"
+    fill="#94a3b8">propose  →  measure  →  keep / revert</text>
 
   <!-- right zone — loop diagram hint (minimalist) -->
   <g transform="translate(980, 100)" opacity="0.18">

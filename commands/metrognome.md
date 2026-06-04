@@ -1,6 +1,6 @@
 ---
 name: metrognome
-description: React Native performance optimization. Open the metrognome menu (Autoresearch / Perf Map 3D / Doctor), or pass a preset/target/natural-language goal to skip straight to work.
+description: The autonomous performance engineer for React Native. Open the metrognome menu (Autoresearch / Perf Map 3D / Doctor), or pass a preset/target/natural-language goal to skip straight to work.
 argument-hint: "[first-load|listing|memory-leaks|bundle-size|re-renders] [--target <Screen/Component>] | <natural-language goal>"
 ---
 

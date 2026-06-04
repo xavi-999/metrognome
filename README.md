@@ -1,6 +1,6 @@
-![metrognome — propose → measure → keep / revert](docs/banner.png)
+![metrognome — the autonomous performance engineer for React Native](docs/banner.png)
 
-> **Metro + metronome + the measure-rhythm loop.** A Claude Code plugin that turns React Native performance work into one autonomous, scientific loop: **propose → measure → keep/revert.**
+> **The autonomous performance engineer for React Native.** Metro + metronome: one command turns scattered RN perf tooling into a single, scientific loop — **propose → measure → keep/revert** — that ships only the gains it can prove.
 
 <!-- ORIGIN: Xavier to supply — 2–3 sentences on why you built this. -->
 
