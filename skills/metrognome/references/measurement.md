@@ -4,6 +4,16 @@
 
 Device performance is noisy: thermals, garbage collection, background work, JIT/Hermes warm-up, and OS scheduling all move a number run-to-run by 5–15% with no code change. A single before/after pair will routinely show a "win" that is pure jitter — and if you keep unmeasured wins, your commit history fills with changes that did nothing (or regressed) and you can't tell which. metrognome's entire credibility rests on **only keeping changes whose improvement is larger than the measurement noise.**
 
+## Preconditions — session must be live
+
+Before entering the N-run protocol, verify all of the following. Sampling with a broken session gives measurements that are noise or zeros — the gate will produce a meaningless result.
+
+1. **Git state is `usable`** — `parseGitState` (from `doctor.mjs`) returns `state: 'usable'`. Without this, commits and reverts will throw. If not usable, print the remediation from Doctor and wait.
+2. **Metro is reachable** — `localhost:${port}/json/list` responds and contains ≥1 live Hermes target (excluding the `-1` ghost). Run `doctor.mjs` or probe manually; if Metro is down, start it first.
+3. **app session is live** — `agent-react-devtools status` reports ≥1 app connected (required for `re-renders` / `listing`). Run the session bring-up sub-protocol if not.
+
+These are verified by Doctor's preflight (step 1 of the loop). If Doctor already ran cleanly, these are satisfied — do not re-run Doctor on every iteration.
+
 ## The N-run protocol
 
 For both baseline and candidate:

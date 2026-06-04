@@ -8,6 +8,7 @@ The `--target <Screen/Component>` arg names the screen or component to focus on.
 
 ## `first-load` — cold-start / TTI
 
+- **Prerequisites:** Metro running, ≥1 Hermes target, live app session, git `usable`. **Hermes required** — CDP heap/CPU profiling is unavailable on JSC (agent-device launch timing still works but gives less signal). See engine matrix in `references/tools.md`.
 - **Metric:** time-to-interactive from launch to the home screen being usable (lower is better).
 - **Drive:** `agent-device open <App>` from a cold start; time until the first interactive frame (snapshot shows the home content + tappable refs).
 - **Measure:** metro-mcp profiler (Hermes CPU profile of startup) + agent-device launch timing. Inspect the CPU profile for the dominant startup cost.
@@ -16,6 +17,7 @@ The `--target <Screen/Component>` arg names the screen or component to focus on.
 
 ## `listing` — scroll jank
 
+- **Prerequisites:** Metro running, live app session, git `usable`. CDP-free path (agent-react-devtools + agent-device) — works on both Hermes and JSC. FPS signal requires Android/Flashlight or real iOS device (see platform note).
 - **Metric:** JS-thread jank / wasted re-renders during a sustained scroll (lower is better). **Platform note:** Displayed-frame FPS is **not available on the iOS Simulator** (Apple platform constraint — see `references/tools.md` matrix); use Android/Flashlight or a real iOS device for FPS. JS-side jank signals (re-renders, longtask, CPU profile) work on Simulator.
 - **Drive:** `agent-device scroll` continuously on the target list.
 - **Measure (CDP-free — works on Expo incl. iOS Simulator):** `agent-react-devtools profile start` → scroll → `profile stop` → `profile slow` / `profile rerenders` (dominant re-render causes); `agent-device metrics --json` for OS-level frame health (CPU, memory; **`fps.droppedFramePercent` only meaningful on Android/device**). On Android or a real iOS device, add `Flashlight` for zero-instrumentation FPS+CPU+RAM. If metro-mcp runtime channel is available (see `references/tools.md`), correlate with Hermes CPU profile for JS-side frame budget.
@@ -26,6 +28,7 @@ The `--target <Screen/Component>` arg names the screen or component to focus on.
 
 ## `memory-leaks` — RAM stability
 
+- **Prerequisites:** Metro running, ≥1 Hermes target, live app session, git `usable`. **Hermes required** — `heap_sample.mjs` uses Hermes CDP. Not available on JSC (route to `bundle-size` or `listing` instead if JSC is detected).
 - **Metric:** JS-heap growth across repeated open↔close cycles of the target screen (should return to baseline after GC; sustained growth = leak). Works on iOS Simulator, iOS device, Android.
 - **Drive:** `agent-device` cyclic open/close of the target screen ×N (e.g. 10 cycles). Use an `.ad` replay script for a deterministic workload.
 - **Measure (primary — cross-platform incl. iOS Simulator):** `heap_sample.mjs --once` after each agent-device cycle; or `heap_sample.mjs --cycles N` for a GC-bracketed N-reading series. Output is a comma-separated usedSize series ready for `stats.mjs`.
@@ -39,6 +42,7 @@ The `--target <Screen/Component>` arg names the screen or component to focus on.
 
 ## `bundle-size` — JS bundle bytes
 
+- **Prerequisites:** git `usable`. **No device, Metro, or session required** — this is a build-time metric. Works on both Hermes and JSC. Skip the session bring-up sub-protocol entirely for this preset.
 - **Metric:** production JS bundle size in bytes (lower is better). Build-time, no device.
 - **Drive:** n/a — produce a release bundle (`npx react-native bundle …` / `expo export`) and measure bytes; optionally a source-map explorer for composition.
 - **Measure:** bundle byte size before/after; the Perf Map flags `barrelImport` sites as suspects.
@@ -47,6 +51,7 @@ The `--target <Screen/Component>` arg names the screen or component to focus on.
 
 ## `re-renders` — wasted commits
 
+- **Prerequisites:** Metro running, live app session (`agent-react-devtools` on port 8097), git `usable`. CDP-free path — works on both Hermes and JSC. Requires agent-react-devtools daemon running and ≥1 app connected.
 - **Metric:** wasted/excessive re-renders on the target screen (lower is better).
 - **Drive:** `agent-device` interactions on the target screen (the ones that feel laggy).
 - **Measure:** agent-react-devtools `profile rerenders` (most re-rendered components) and `profile slow`; `get component @cN` to inspect why props change. Verify with `profile diff` before/after.

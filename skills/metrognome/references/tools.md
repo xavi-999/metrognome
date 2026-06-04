@@ -2,6 +2,42 @@
 
 metrognome delegates all measurement to four tools — metro-mcp plus three from Callstack (agent-device, agent-react-devtools, react-native-best-practices). This file is the **cheatsheet + routing table**. Command surfaces drift between releases — when something doesn't match, the installed CLI help is the source of truth (`agent-device help workflow`, `agent-react-devtools --help`) and the live MCP tool list for metro-mcp. **This is the single file to update before a pitch or when a tool version bumps.** (Verified against: metro-mcp 0.11.x, agent-device 0.16.12, agent-react-devtools 0.4.0. RN connect-import guidance corrected 2026-06-03.)
 
+## Preconditions & recovery
+
+Before any measurement run, confirm these prerequisites are met. Use the symptom column to diagnose; use the remediation column to fix.
+
+| Condition | Check | Symptom if broken | Remediation |
+|---|---|---|---|
+| **Metro running** | `curl -s localhost:8081/json/list` returns JSON | `probeMetro` → `reachable:false` | `node doctor.mjs --launch-metro` or run the detected start command manually |
+| **≥1 Hermes target** | `/json/list` has entries with `id !== '-1'` | `liveTargets: 0` even with Metro up | Relaunch app: `agent-device open <bundleId> --relaunch` |
+| **app session live** | `agent-react-devtools status` → `Apps: N connected` | "0 connected" in devtools | `agent-device open <bundleId> --relaunch` then `agent-react-devtools wait --connected` |
+| **Git usable** | `parseGitState` returns `state: 'usable'` | Commits/reverts throw | See `no-repo` / `no-commits` / `detached` remediation in Doctor output |
+| **JSC engine** | `detectEngine` reports `jsc` | `first-load` / `memory-leaks` unavailable | Route to `bundle-size`, `listing`, `re-renders` instead |
+
+## Device enumeration
+
+List booted iOS simulators and connected Android devices before a run:
+
+```bash
+# iOS simulators (macOS — lists all booted)
+xcrun simctl list devices booted -j
+
+# Android devices/emulators
+adb devices
+```
+
+`parseSimctl` and `parseAdbDevices` in `doctor.mjs` parse these into `[{udid,name}]` / `[{serial,state}]`. Doctor prints the result automatically — the raw commands are useful when debugging connectivity outside a Doctor run.
+
+## Engine matrix — which presets work on each engine
+
+| Preset | Hermes | JSC | Notes |
+|---|---|---|---|
+| `first-load` | ✅ Full (Hermes CPU profile + startup timing) | ⚠️ agent-device launch timing only (no CDP heap/CPU) | CDP heap/CPU require Hermes |
+| `listing` | ✅ Full | ✅ Full | CDP-free path (agent-react-devtools + agent-device) works on both |
+| `memory-leaks` | ✅ Full (`heap_sample.mjs` via CDP) | ❌ JS heap sampling requires Hermes CDP | Rewrite leaks as native-mem check with `agent-device` if on JSC |
+| `bundle-size` | ✅ Full | ✅ Full | Build-time, no engine/device dependency |
+| `re-renders` | ✅ Full | ✅ Full | CDP-free path via agent-react-devtools |
+
 ## Routing — which tool for which signal
 
 | Signal you need | Tool | Why |

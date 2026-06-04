@@ -62,7 +62,8 @@ Run this for an Autoresearch preset. It is a direct port of the web playbook's M
    - **Bootstrap:** ensure `.metrognome/` exists (auto-create if absent; never prompt).
    - **Scoped-tracking init:** capture `preExistingDirty` = paths from `git status --porcelain` before metrognome touches anything. These paths will never be staged or reverted by metrognome regardless of what happens next.
    - **Consolidated run-start prompt** (see below) — surface detected setup items + commit mode + live report in a **single** AskUserQuestion (one prompt, three groups). Wait for the response, then proceed.
-   - **Auto-remediation** (if user chose "fix"): bring up environment (start Metro if not running; boot/attach an available simulator or device); **establish a live app session** (see sub-protocol below); start daemon (`agent-react-devtools start`); `agent-react-devtools wait --connected`; select the live Hermes target from `localhost:8081/json/list`; set metro-mcp `newArchitecture: true` if New Arch was detected. Only escalate to the user when the agent genuinely cannot proceed (see *When to ask* below).
+   - **Session bring-up (always, silently — before baseline regardless of run-start prompt response):** first verify git state via `parseGitState` (see *Git must be usable* in Discipline rules — if not `usable`, print the matching remediation message and wait; never run git mutations). Then bring up the environment (start Metro if not running; boot/attach an available simulator or device); **establish a live app session** (see sub-protocol below); start daemon (`agent-react-devtools start`); `agent-react-devtools wait --connected`; select the live Hermes target from `localhost:8081/json/list`; set metro-mcp `newArchitecture: true` if New Arch was detected. Healthy session → proceed instantly with no prompt. Only escalate to the user when the agent genuinely cannot proceed (see *When to ask* below). **`bundle-size` is build-time — skip Metro/session bring-up for it.**
+   - **Optional setup** (only when blockers were detected by Doctor): install missing optional CLIs or apply flagged setup actions. This is what the Blockers group in the run-start prompt covers — live-session bring-up is NOT conditional on the user's choice here.
    - **Setup commit** (if `commitMode != no-commit`): after wiring, `git add <setup paths only — never preExistingDirty>` and commit as `chore(metrognome): setup workspace`. Then record `baselineSha = git rev-parse HEAD` (after setup mutations, so the loop's revert never touches infra).
    - **Load memory and config:** read `.metrognome/perf-memory.md` to prime known hotspots; load `.metrognome/config.json` for `commitMode`, `liveReport`, `runs`, `k`, `budget`.
 2. **Baseline.** Run the preset's measurement **N times** (default N=5; discard one warmup run). Compute **mean ± stddev** with `scripts/stats.mjs`. Open an Experiment Ledger entry (`assets/ledger.template.md` → `.metrognome/ledger/<timestamp>-<preset>.md`).
@@ -91,6 +92,7 @@ Run this for an Autoresearch preset. It is a direct port of the web playbook's M
 - *One variable at a time.* Stacked fixes make the gate meaningless — you can't attribute the delta.
 - *Never record an unmeasured fix.* A change with no before/after distribution is folklore, not a result.
 - *Scoped tracking — metrognome commits/reverts only its own files.* `git add <touched paths>` (never `git add -A`); REVERT restores from pre-fix snapshots. `preExistingDirty` paths are never staged or reverted. `commitMode` shapes the *final* history — it never removes the internal per-iteration commits until end of run.
+- *Git must be usable before any mutation.* `parseGitState` (from `doctor.mjs`) must return `state: 'usable'` before `baselineSha = git rev-parse HEAD` (step 1), before any iteration `git commit` (step 6), and before any `git reset --soft` in the end-of-run transform (step 8). In `no-repo`, `no-commits`, or `detached` states, print the matching remediation from Doctor and wait — never run git mutations in those states.
 
 ## Locating the bundled scripts
 
@@ -162,17 +164,23 @@ Doctor bootstraps a repo and detects what needs fixing; the skill agent then **p
 
 **On Expo / New Arch:** set metro-mcp `newArchitecture: true` (auto-detected; see above). `listing` and `re-renders` degrade gracefully to the CDP-free path (agent-react-devtools + agent-device) — see `references/tools.md`. RN auto-connects to agent-react-devtools on port 8097; do not add the `connect` import.
 
+**On JSC engine:** if `detectEngine` reports JSC (visible in Doctor output), `first-load` and `memory-leaks` (which need Hermes CDP for heap/CPU profiling) are unavailable. Route to `bundle-size`, `listing`, or `re-renders` instead — or use `agent-device` perf samples for device-level timing where available.
+
+**On multiple devices:** if Doctor reports >1 booted simulator or connected Android device, metrognome targets the first booted/connected one. When the target bundle id is resolvable, confirm the connected app matches it before starting baseline (wrong app in foreground = wrong baseline).
+
+**On not-an-RN-project:** if Doctor reports the repo doesn't look like an RN/Expo app, confirm the target directory before proceeding.
+
 ## Consolidated run-start prompt
 
 Present **one** AskUserQuestion (or a compact numbered menu if AskUserQuestion is unavailable) at run start, with up to three groups. Pre-fill from `.metrognome/config.json`; accepting defaults takes one action:
 
 | Group | Question | Options |
 |---|---|---|
-| **Blockers** *(only when setup items were detected)* | "Fix the detected setup items automatically and proceed?" | Yes, fix & proceed (default) · I'll fix manually, show me · Skip optional ones — run agent-device only |
+| **Blockers** *(only when optional setup items were detected — missing CLIs, metro-mcp config changes)* | "Fix the optional setup items?" | Yes, fix & proceed (default) · Skip — I'll handle them · Show me what will change |
 | **Commit mode** | "Commit shape?" | Commit each kept fix — `per-iteration` (default) · One commit at the end · Don't commit — leave staged |
 | **Live report** | "Live HTML dashboard?" | Off (default) · On — write `.metrognome/report.html` |
 
-After the response: run auto-remediation (if "fix" was chosen), then proceed to Baseline. Never present these questions across multiple separate prompts.
+After the response: apply any optional fixes chosen. Live-session bring-up already ran (or is running) regardless of this response — proceed to Baseline. Never present these questions across multiple separate prompts.
 
 ## Performance Memory
 
