@@ -38,7 +38,12 @@ function main() {
   if (!fs.existsSync(TEMPLATE)) { console.error(`missing template: ${TEMPLATE}`); process.exit(1); }
 
   const rawData = fs.readFileSync(dataFile, 'utf8');
-  JSON.parse(rawData); // validate before embedding
+  try {
+    JSON.parse(rawData);
+  } catch (e) {
+    console.error(`invalid JSON in run-state: ${e.message}`);
+    process.exit(1);
+  }
   const template = fs.readFileSync(TEMPLATE, 'utf8');
 
   if (!template.includes(DATA_MARKER)) {
@@ -46,8 +51,10 @@ function main() {
     process.exit(1);
   }
 
+  // Escape </script> so it can't close the script block if it appears in data values
+  const safeData = rawData.replace(/<\/script>/gi, '<\\/script>');
   const [before, after] = template.split(DATA_MARKER);
-  const out = before + rawData + after;
+  const out = before + safeData + after;
 
   const absOut = path.resolve(outFile);
   fs.writeFileSync(absOut, out, 'utf8');
