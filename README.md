@@ -38,6 +38,19 @@ node skills/metrognome/scripts/perf_scan.mjs <your-rn-app> --out graph.json
 node skills/metrognome/scripts/build_perf_map.mjs graph.json --out perf-map.html --open
 ```
 
+### CI Autopilot (autonomous, weekly)
+
+metrognome also runs as a **weekly CI agent** — no human in the loop. A GitHub Actions
+workflow scans the repo, picks the top debt findings, autoresearches fixes, and opens a
+PR with the measured gains and *why* each fix was chosen.
+
+Two templates in [`templates/ci/`](templates/ci/):
+- **Device-free** (recommended): measures `bundle-size`, defers device-only findings.
+  Runs on any `ubuntu-latest` runner, always reliable.
+- **Device**: boots an Android emulator; all 5 presets measurable. Heavier, opt-in.
+
+See [`templates/ci/README.md`](templates/ci/README.md) for setup, cost, and gotchas.
+
 ---
 
 ## What the skill offers
@@ -125,7 +138,7 @@ Paste a Top-3 command (or pick **Autoresearch** → preset from the menu) — me
 - **Perf Map + stats need no device.** The live loop needs a simulator/emulator/device + a running Metro session.
 - **Live-loop toolchain** (installed via Doctor): `agent-device`, `agent-react-devtools` (CLIs), `metro-mcp` (bundled MCP), and the `react-native-best-practices` Callstack agent-skill.
 - **Clean git tree required for Autoresearch** — git is the experiment log; auto-revert needs a clean baseline. Doctor refuses to run dirty. The final commit shape is configurable via `.metrognome/config.json` (`commitMode`: `per-iteration` · `one-commit` · `no-commit`).
-- **Local-only.** The loop needs live Metro + a device — it cannot run as a cloud cron.
+- **Device loop is local.** The full loop (all presets) needs live Metro + a device — device-measured presets (`listing`, `re-renders`, `memory-leaks`, `first-load`) cannot run as a cloud cron without an emulator. The **device-free autopilot** (`bundle-size` preset) *does* run headless — see [`templates/ci/`](templates/ci/).
 - **iOS Simulator blind spot:** displayed-frame **FPS** is unavailable (Apple constraint — Simulator renders on the host GPU). Every other signal (JS heap, re-renders, longtask jank, TTI, CPU/RAM) works on Simulator. For FPS: use **Flashlight** (Android) or **Instruments/XCTest** (real iOS device).
 - **RN < 0.85: one CDP connection.** Close all RN DevTools / Fusebox windows before metro-mcp runtime calls.
 - **Expo / New Arch:** if metro-mcp runtime calls time out, set `newArchitecture: true`; `listing`/`re-renders` degrade to the CDP-free path (metro-mcp unverified offline).
