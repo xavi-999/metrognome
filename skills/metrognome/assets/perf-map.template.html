@@ -193,6 +193,19 @@
 
   .hint { bottom: 20px; right: 22px; color: var(--faint); font-family: var(--mono); font-size: 10px;
     letter-spacing: 0.04em; }
+
+  /* ---- mobile (≤ 768px): the map wins, chrome gives way ---------------- *
+   * #top3 alone covers a phone viewport, so it's hidden — its content is   *
+   * still reachable by tapping any hotspot node. Desktop is untouched.     */
+  @media (max-width: 768px) {
+    #top3 { display: none; }
+    .hint { display: none; }                    /* keyboard hint — no keyboard on touch */
+    .scene-nav-info { display: none !important; } /* 3d-force-graph's mouse instructions */
+    #head, #controls { left: 12px; max-width: calc(100vw - 24px); }
+    #controls { width: calc(100vw - 24px); }
+    #legend { left: 12px; right: 12px; bottom: 12px; flex-wrap: wrap; gap: 6px 12px; }
+    #panel { width: 100vw; }                    /* node detail: full-sheet on phones */
+  }
 </style>
 </head>
 <body>
