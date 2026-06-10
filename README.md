@@ -1,8 +1,13 @@
 ![metrognome — the autonomous performance engineer for React Native](docs/banner.png)
 
+[![CI](https://github.com/xavi-999/metrognome/actions/workflows/ci.yml/badge.svg)](https://github.com/xavi-999/metrognome/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/xavi-999/metrognome)](https://github.com/xavi-999/metrognome/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-16a34a)](./LICENSE)
+[![Live demo](https://img.shields.io/badge/live_demo-xavi--999.github.io-16a34a)](https://xavi-999.github.io/metrognome/)
+
 > **The autonomous performance engineer for React Native.** `/metrognome`: one command turns scattered RN performance tooling into a single, scientific loop — **propose → measure → keep/revert** — that ships gains it can prove.
 
-Built for any **React Native** developer that is eager to optimize any performance issue. Whether tackling TTI, memory leaks, or re-renders, Metrognome's goal is to turn complex performance constraints into a single, scientific loop. With one `/metrognome` call, the tool researches, optimizes, and verifies desired targets autonomously shipping gains that are actually proven.
+For any React Native developer chasing TTI, memory leaks, jank, bundle size, or re-renders: one `/metrognome` call researches, optimizes, and verifies autonomously — and every gain it reports is one it measured.
 One input, zero human interaction, flabbergasting performance improvements.
 
 Inspired by OpenAI co-founder Andrej Karpathy's `/autoresearch` [skill](https://github.com/karpathy/autoresearch). Fully adapted to React Native.
@@ -12,6 +17,8 @@ Inspired by OpenAI co-founder Andrej Karpathy's `/autoresearch` [skill](https://
 React Native performance tooling is powerful but scattered — each tool knows one thing, nothing shares context between sessions, and there's no gate between "this might help" and "this actually helped." metrognome routes each measurement to the right tool and runs a loop with a real gate: one fix at a time, measured N times, kept only if the gain clears the noise — else reverted.
 
 ![metrognome 3D Perf Map — white canvas, green chrome, node size = perf debt, color = severity.](docs/perf-map.png)
+
+▶ [**Explore the live 3D map**](https://xavi-999.github.io/metrognome/perf-map.html) — a real scan of bluesky's [social-app](https://github.com/bluesky-social/social-app) — and the [live run report](https://xavi-999.github.io/metrognome/report.html).
 
 ---
 
@@ -88,7 +95,7 @@ See [`templates/ci/README.md`](templates/ci/README.md) for setup, cost, and gotc
 | `build_run_report.mjs` | `npm run report` | Renders `run-state.json` → live HTML progress dashboard |
 | `stats.mjs` | `npm run stats:test` | Statistical gate (mean ± stddev, keep/revert decision) — self-testable |
 | `build_playbook.mjs` | `npm run playbook` | Distils ledger runs into `playbook.md` + `playbook.json` (proven wins / dead ends) |
-| `doctor.mjs` | — | Toolchain check, Metro + git preflight, `.metrognome/` bootstrap + `config.json` |
+| `doctor.mjs` | `npm run doctor:test` | Toolchain check, Metro + git preflight, `.metrognome/` bootstrap + `config.json` — self-testable |
 | `heap_sample.mjs` | — | JS-heap leak sampling across open↔close cycles — needs a live app |
 
 Installed-plugin path: `${CLAUDE_PLUGIN_ROOT}/skills/metrognome/scripts/<script>`.
