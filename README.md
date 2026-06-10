@@ -87,6 +87,7 @@ See [`templates/ci/README.md`](templates/ci/README.md) for setup, cost, and gotc
 | `build_perf_map.mjs` | `npm run map` | Renders `graph.json` → standalone HTML 3D force-graph |
 | `build_run_report.mjs` | `npm run report` | Renders `run-state.json` → live HTML progress dashboard |
 | `stats.mjs` | `npm run stats:test` | Statistical gate (mean ± stddev, keep/revert decision) — self-testable |
+| `build_playbook.mjs` | `npm run playbook` | Distils ledger runs into `playbook.md` + `playbook.json` (proven wins / dead ends) |
 | `doctor.mjs` | — | Toolchain check, Metro + git preflight, `.metrognome/` bootstrap + `config.json` |
 | `heap_sample.mjs` | — | JS-heap leak sampling across open↔close cycles — needs a live app |
 
@@ -175,7 +176,7 @@ hooks/               SessionStart (npm install) + UserPromptSubmit (perf-memory 
 skills/metrognome/
   SKILL.md           the orchestrator (menu, routing, loop, gate, ledger, memory, config)
   references/        presets · tools · measurement · perf-map · memory
-  scripts/           perf_scan · build_perf_map · build_run_report · stats · doctor · heap_sample
+  scripts/           perf_scan · build_perf_map · build_run_report · stats · build_playbook · doctor · heap_sample
   assets/            vendored 3d-force-graph · HTML templates · ledger template · sample run-state
 docs/                banner.svg/png · perf-map.png · diagrams/ (loop · orchestration · gate · signal-vs-noise)
 examples/            sample-rn-app fixture with seeded anti-patterns

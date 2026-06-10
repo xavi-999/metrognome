@@ -1,5 +1,31 @@
 # Changelog
 
+## v0.2.2 — 2026-06-10
+
+### Added
+- **Performance Playbook** (`scripts/build_playbook.mjs`) — distils `.metrognome/ledger/*.md` into `playbook.md` + `playbook.json`: "proven wins" and "dead ends" aggregated across runs. SKILL.md now reads the playbook before baseline to skip already-tried patterns. `npm run playbook` / `npm run playbook:test` aliases added.
+- **Metric trajectory trend chart** in the live run report — SVG step-line of the committed metric across iterations, KEEP/HOLD dots, ghost markers for rejected candidates, gradient fill, and endpoint labels.
+
+### Fixed
+- Hero image link in README (`docs/perf_map.png` → `docs/perf-map.png`).
+- Version harmonized to `0.2.2` across `package.json`, `plugin.json`, and `marketplace.json`.
+- CI workflow now uses `npm ci` (package-lock.json was already committed).
+- README: removed stale placeholder comment, added founder context and origin section.
+
+---
+
+## v0.2.1 — 2026-06-07
+
+### Added
+- **Session-recovery onboarding** — Doctor restores `.metrognome/` context on session restart.
+- **CI Autopilot templates** (`templates/ci/`) — device-free and device GitHub Actions workflows for weekly autonomous performance runs.
+- **Standalone plugin logo** (`docs/logo*.png/svg`) — works without the banner.
+
+### Fixed
+- Run-report JSON guard for invalid state; `</script>` literal escape in inline JSON block.
+
+---
+
 ## v0.2.0 — 2026-06-02
 
 ### Added
@@ -22,7 +48,7 @@
 
 ## v0.1.0 — 2026-06-02
 
-First public release.
+Initial release (private).
 
 - Static RN perf scan with ten Babel AST detectors (`perf_scan.mjs`)
 - Offline 3D Perf Map — interactive force-graph, no device needed (`build_perf_map.mjs`)

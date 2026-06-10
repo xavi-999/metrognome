@@ -33,10 +33,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      # No lockfile in this repo — plain npm install resolves from package.json.
-      # For stricter reproducibility, commit a package-lock.json and switch to npm ci.
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Gate math self-test (stats.mjs)
         run: npm run stats:test

@@ -241,3 +241,5 @@ If `openReport` is `true`, open `report.html` once at run start (auto-refreshes 
 - `.metrognome/config.json` — per-repo settings. Edited via **Configurations** menu.
 - `assets/report.template.html` + `scripts/build_run_report.mjs` — live progress dashboard (when `liveReport` is on).
 - `.metrognome/run-state.json` — written after each iteration (gitignored); drives the live report.
+- `scripts/build_playbook.mjs` — reads ledger files, emits `.metrognome/playbook.md` + `playbook.json`.
+- `.metrognome/playbook.md` — proven wins and dead ends distilled from past runs; read at loop start.
