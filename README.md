@@ -1,10 +1,15 @@
 ![metrognome — the autonomous performance engineer for React Native](docs/banner.png)
 
-> **The autonomous performance engineer for React Native.** Metro + metronome: one command turns scattered RN perf tooling into a single, scientific loop — **propose → measure → keep/revert** — that ships only the gains it can prove.
+> **The autonomous performance engineer for React Native.** `/metrognome`: one command turns scattered RN performance tooling into a single, scientific loop — **propose → measure → keep/revert** — that ships gains it can prove.
 
-<!-- ORIGIN: Xavier to supply — 2–3 sentences on why you built this. -->
+Built for any **React Native** developer that is eager to optimize any performance issue. Whether tackling TTI, memory leaks, or re-renders, Metrognome's goal is to turn complex performance constraints into a single, scientific loop. With one `/metrognome` call, the tool researches, optimizes, and verifies desired targets autonomously shipping gains that are actually proven.
+One input, zero human interaction, flabbergasting performance improvements.
 
-React Native performance tooling is powerful but scattered — each tool knows one thing, nothing shares context between sessions, and there's no gate between "this might help" and "this actually helped." metrognome routes each measurement to the right tool and runs a loop with a real gate: one fix at a time, measured N times, kept only if the gain clears the noise — else reverted. Git is the experiment log; kept changes are metric-gated and the final commit shape is configurable.
+Inspired by OpenAI co-founder Andrej Karpathy's `/autoresearch` [skill](https://github.com/karpathy/autoresearch). Fully adapted to React Native.
+
+## What `/metrognome` solves
+
+React Native performance tooling is powerful but scattered — each tool knows one thing, nothing shares context between sessions, and there's no gate between "this might help" and "this actually helped." metrognome routes each measurement to the right tool and runs a loop with a real gate: one fix at a time, measured N times, kept only if the gain clears the noise — else reverted.
 
 ![metrognome 3D Perf Map — white canvas, green chrome, node size = perf debt, color = severity.](docs/perf-map.png)
 
