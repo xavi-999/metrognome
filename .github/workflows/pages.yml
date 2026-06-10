@@ -76,8 +76,33 @@ jobs:
       - name: Assemble landing page
         run: |
           cp docs/pages/index.html _site/
-          cp docs/logo.png docs/banner.png _site/
-          sed -i "s/__BLUESKY_SHA__/${BLUESKY_SHA}/g; s/__BUILD_DATE__/$(date -u +%Y-%m-%d)/g" _site/index.html
+          cp docs/logo.png _site/
+          # Pull the hero numbers from the real scan — the page never claims
+          # a figure the build didn't measure.
+          node -e "
+            const g = JSON.parse(require('fs').readFileSync('/tmp/graph.json', 'utf8'));
+            const fmt = (n) => n.toLocaleString('en-US');
+            const out = {
+              MODULES: fmt(g.nodes.length),
+              IMPORTS: fmt(g.links.length),
+              HOTSPOTS: fmt(g.nodes.filter((n) => n.isHotspot).length),
+              FINDINGS: fmt(g.nodes.reduce((s, n) => s + (n.findings?.length || 0), 0)),
+            };
+            require('fs').writeFileSync('/tmp/stats.env', Object.entries(out).map(([k, v]) => k + '=' + v).join('\n'));
+          "
+          . /tmp/stats.env
+          sed -i \
+            -e "s/__BLUESKY_SHA__/${BLUESKY_SHA}/g" \
+            -e "s/__BUILD_DATE__/$(date -u +%Y-%m-%d)/g" \
+            -e "s/__STAT_MODULES__/${MODULES}/g" \
+            -e "s/__STAT_IMPORTS__/${IMPORTS}/g" \
+            -e "s/__STAT_HOTSPOTS__/${HOTSPOTS}/g" \
+            -e "s/__STAT_FINDINGS__/${FINDINGS}/g" \
+            _site/index.html
+          # nothing un-templated left behind
+          if grep -q '__' _site/index.html; then
+            echo "::error::unsubstituted placeholder left in index.html" && exit 1
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
