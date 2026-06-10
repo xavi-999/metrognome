@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.2.3 — 2026-06-10
+
+### Added
+- **GitHub Pages live demo** (`.github/workflows/pages.yml` + `docs/pages/index.html`) — builds the 3D Perf Map from a real scan of `bluesky-social/social-app` at a pinned SHA (methodology example, clearly attributed) plus the sample-run report, deployed to https://xavi-999.github.io/metrognome/. No generated HTML committed to main.
+- **CI: official plugin validation** — `claude plugin validate . --strict` now runs in CI alongside the hand-rolled JSON checks.
+- **Community files** — `CONTRIBUTING.md` (dev setup, test surface, critical contributor rules, release process), bug-report and feature-request issue forms, PR template.
+
+### Fixed
+- `marketplace.json` was missing a top-level `description` — `claude plugin validate . --strict` failed; now passes.
+- `perf_scan.mjs` printed a raw `ERR_MODULE_NOT_FOUND` stack when Babel deps were missing (silent SessionStart `npm install` failure) — now exits with one actionable remediation line.
+- README: badges added (CI · release · license · live demo), intro paragraph tightened, live-demo links under the Perf Map screenshot, `doctor:test` alias in the scripts table.
+- CLAUDE.md drift: playbook/doctor/smoke/test commands, `heap_sample.mjs` + `build_playbook.mjs` + `templates/ci/` + workflows + `docs/pages/` in the layout, `.metrognome/playbook.md` in the bootstrap list.
+- Plugin metadata enriched: `plugin.json` ($schema, author email/url, Pages homepage, tightened description) and `marketplace.json` plugin entry (author, homepage, repository, license, keywords, category, tags).
+
+---
+
 ## v0.2.2 — 2026-06-10
 
 ### Added
