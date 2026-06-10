@@ -82,6 +82,22 @@
   .big-unit { font-family: var(--mono); font-size: 14px; color: var(--dim); margin-left: 4px; }
   .big-std { font-family: var(--mono); font-size: 14px; color: var(--faint); }
 
+  /* ---- trend chart card ---- */
+  .trend { background: var(--bg-2); border: 1px solid var(--hair); border-radius: 14px;
+    padding: 18px 22px; margin-bottom: 24px; }
+  .trend svg { width: 100%; display: block; overflow: visible; }
+  .trend-line { fill: none; stroke: var(--accent); stroke-width: 2.5;
+    stroke-linejoin: round; stroke-linecap: round; }
+  .trend-dot-keep { fill: var(--accent); stroke: var(--bg-2); stroke-width: 2; }
+  .trend-dot-hold { fill: var(--faint); }
+  .trend-ghost { fill: var(--bg-2); stroke: var(--cold); stroke-width: 1.5; }
+  .trend-ghost-link { stroke: var(--hair-2); stroke-width: 1; stroke-dasharray: 3 3; fill: none; }
+  .trend-grid { stroke: var(--hair); stroke-width: 1; fill: none; }
+  .trend-axis-label { font-family: var(--mono); font-size: 10px; fill: var(--faint); }
+  .trend-endpoints { font-family: var(--mono); font-size: 12px; color: var(--dim);
+    display: flex; justify-content: space-between; margin-top: 8px; }
+  .trend-endpoints b { color: var(--accent); font-weight: 700; }
+
   /* ---- net delta banner ---- */
   .net-delta { background: var(--tint); border: 1px solid rgba(22,163,74,0.25);
     border-radius: 12px; padding: 16px 22px; margin-bottom: 28px;
@@ -159,6 +175,90 @@ const DATA = /*__RUN_DATA__*/;
 const esc = (s) => String(s == null ? '' : s)
   .replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+function buildTrend(DATA) {
+  const b = DATA.baseline || {};
+  if (b.mean == null) return '';
+  const iters = DATA.iterations || [];
+
+  let committed = b.mean;
+  const pts = [{ i: 0, y: committed, kind: 'baseline' }];
+  const ghosts = [];
+
+  for (let j = 0; j < iters.length; j++) {
+    const it = iters[j];
+    const cm = (it.candidate || {}).mean;
+    if (it.decision === 'KEEP' && cm != null) {
+      committed = cm;
+      pts.push({ i: j + 1, y: committed, kind: 'keep' });
+    } else {
+      pts.push({ i: j + 1, y: committed, kind: 'hold' });
+      if (cm != null) ghosts.push({ i: j + 1, y: cm });
+    }
+  }
+
+  const allVals = [b.mean, ...iters.map(it => (it.candidate || {}).mean).filter(v => v != null)];
+  const yMax = Math.max(...allVals) * 1.08;
+  const N = pts.length;
+
+  const W = 760, H = 200, padL = 44, padR = 16, padT = 16, padB = 28;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+  const f = v => v.toFixed(1);
+  const px = idx => padL + (N > 1 ? idx * plotW / (N - 1) : plotW / 2);
+  const py = v => padT + plotH * (1 - v / yMax);
+
+  const gridHtml = [0.5, 0.25].map(frac => {
+    const gv = yMax * frac, gy = py(gv);
+    return `<line class="trend-grid" x1="${f(padL)}" y1="${f(gy)}" x2="${f(W - padR)}" y2="${f(gy)}"/>` +
+           `<text class="trend-axis-label" x="${padL - 6}" y="${f(gy + 3.5)}" text-anchor="end">${Math.round(gv)}</text>`;
+  }).join('');
+
+  const xLabelsHtml = pts.map((p, idx) =>
+    `<text class="trend-axis-label" x="${f(px(idx))}" y="${f(H - 4)}" text-anchor="middle">${idx === 0 ? 'base' : idx}</text>`
+  ).join('');
+
+  const bottom = padT + plotH;
+  const areaD = `M ${f(px(0))} ${f(bottom)} ${pts.map((p, idx) => `L ${f(px(idx))} ${f(py(p.y))}`).join(' ')} L ${f(px(N - 1))} ${f(bottom)} Z`;
+  const lineD = pts.map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${f(px(idx))} ${f(py(p.y))}`).join(' ');
+
+  const ghostHtml = ghosts.map(g => {
+    const gx = f(px(g.i)), gy = f(py(g.y)), holdY = f(py(pts[g.i].y));
+    return `<line class="trend-ghost-link" x1="${gx}" y1="${holdY}" x2="${gx}" y2="${gy}"/>` +
+           `<circle class="trend-ghost" cx="${gx}" cy="${gy}" r="5"/>`;
+  }).join('');
+
+  const dotHtml = pts.map((p, idx) => {
+    const x = f(px(idx)), y = f(py(p.y));
+    return p.kind === 'hold'
+      ? `<circle class="trend-dot-hold" cx="${x}" cy="${y}" r="2.5"/>`
+      : `<circle class="trend-dot-keep" cx="${x}" cy="${y}" r="${p.kind === 'baseline' ? 4.5 : 4}"/>`;
+  }).join('');
+
+  const unit = esc(DATA.unit || '');
+  return `
+  <div class="trend">
+    <div class="section-title">metric trajectory</div>
+    <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.28"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${gridHtml}
+      ${xLabelsHtml}
+      <path class="trend-area" d="${areaD}" fill="url(#tg)"/>
+      <path class="trend-line" d="${lineD}" id="trend-line"/>
+      ${ghostHtml}
+      ${dotHtml}
+    </svg>
+    <div class="trend-endpoints">
+      <span><b>${pts[0].y}${unit}</b> baseline</span>
+      <span>current <b>${pts[N - 1].y}${unit}</b></span>
+    </div>
+  </div>`;
+}
+
 // Header right
 const isDone = DATA.status === 'done' || DATA.status === 'complete';
 document.getElementById('hd-right').innerHTML = `
@@ -188,6 +288,9 @@ const baselineHtml = `
       <span class="big-std">± ${b.std != null ? b.std : '—'} · n=${b.runs || DATA.runs || '?'}</span>
     </div>
   </div>`;
+
+// Trend chart
+const trendHtml = buildTrend(DATA);
 
 // Net delta
 const netHtml = DATA.netDelta ? `
@@ -234,10 +337,11 @@ const commitsHtml = (DATA.commits || []).length ? `
   </div>` : '';
 
 document.getElementById('content').innerHTML =
-  summaryHtml + baselineHtml + netHtml +
+  summaryHtml + trendHtml + baselineHtml + netHtml +
   `<div class="section-title" style="margin-bottom:12px;">iterations</div>` +
   `<div class="iter-list">${iters || '<div style="color:var(--faint);font-family:var(--mono);font-size:12px;">No iterations yet — run in progress…</div>'}</div>` +
   commitsHtml;
+
 </script>
 </body>
 </html>
