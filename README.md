@@ -10,6 +10,8 @@
 For any React Native developer chasing TTI, memory leaks, jank, bundle size, or re-renders: one `/metrognome` call researches, optimizes, and verifies autonomously — and every gain it reports is one it measured.
 One input, zero human interaction, flabbergasting performance improvements.
 
+Works with **Claude Code, OpenAI Codex CLI, Cursor, Gemini CLI, and GitHub Copilot CLI.**
+
 Inspired by OpenAI co-founder Andrej Karpathy's `/autoresearch` [skill](https://github.com/karpathy/autoresearch). Fully adapted to React Native.
 
 ## What `/metrognome` solves
@@ -120,6 +122,10 @@ Static RN heuristics fire constantly in healthy code. The Perf Map's scoring is 
 This registers the `/metrognome` command, the orchestrator skill, the bundled `metro-mcp` MCP server, and the perf-memory hook. Then run **Doctor** once in your RN app to install the CLI tools and bootstrap `.metrognome/`.
 
 **Scripts need `npm install`:** When used inside a Claude session the SessionStart hook installs dependencies automatically. For by-hand / CI use (e.g. `npm run scan`), run `npm install` in the plugin directory first.
+
+#### Other agents (Codex · Cursor · Gemini · Copilot)
+
+Register the `metro-mcp` MCP server, drop the `metrognome` skill into your agent's skills directory, and run scripts with `npx metrognome@latest <scan|map|report|doctor|…>`. See [COMPATIBILITY.md](./COMPATIBILITY.md) for per-harness config snippets.
 
 ---
 

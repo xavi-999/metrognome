@@ -60,13 +60,13 @@ For `listing` on iOS Simulator, gate on **re-render count** or **longtask durati
 ## Run it
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/skills/metrognome/scripts/stats.mjs" \
+$MG stats \
   --baseline  "1200,1180,1210,1190" \
   --candidate "980,1000,990,1010" \
   --min-effect 30 --k 2 --direction lower --unit ms
 ```
 
-Returns JSON with both distributions, improvement (absolute + %), pooled std, noise band, and `decision: KEEP | REVERT`. Self-check: `node …/stats.mjs --self-test`.
+Returns JSON with both distributions, improvement (absolute + %), pooled std, noise band, and `decision: KEEP | REVERT`. Self-check: `$MG stats --self-test`.
 
 ## After the decision
 

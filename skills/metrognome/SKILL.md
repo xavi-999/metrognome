@@ -94,16 +94,21 @@ Run this for an Autoresearch preset. A port of the web playbook's Measure→Diag
 
 ## Locating scripts
 
-Commands use `${CLAUDE_PLUGIN_ROOT}`. If unset, resolve once at session start:
+Resolve the metrognome runner once at session start (works in every harness):
 
 ```bash
-MG="${CLAUDE_PLUGIN_ROOT:-$(dirname "$(dirname "$(find "$HOME/.claude/plugins" -path '*metrognome*/scripts/perf_scan.mjs' 2>/dev/null | head -1)")")}"
-# then call:  node "$MG/scripts/perf_scan.mjs" …   (note: $MG points at the skill dir here)
+if [ -n "$CLAUDE_PLUGIN_ROOT" ]; then
+  MG="node $CLAUDE_PLUGIN_ROOT/bin/metrognome.mjs"   # bundled Claude Code plugin (offline, zero latency)
+else
+  MG="npx -y metrognome@latest"                       # Codex · Cursor · Gemini · Copilot
+fi
+# Subcommands: scan · map · report · playbook · stats · doctor · heap
+#   e.g.  $MG scan <repo> --out graph.json   |   $MG map graph.json --out perf-map.html --open
 ```
 
-**Dependencies:** `perf_scan.mjs` requires `@babel/parser` and `@babel/traverse`. The SessionStart hook installs them automatically; for by-hand / CI use, run `npm install` in `${CLAUDE_PLUGIN_ROOT}` first.
+**Claude Code users:** `$CLAUDE_PLUGIN_ROOT` is always set inside a plugin session — `$MG` resolves to the bundled copy and runs offline with no network round-trip. Behavior is identical to before.
 
-In the snippets below, `${CLAUDE_PLUGIN_ROOT}/skills/metrognome` and `$MG` are the same skill directory.
+**Dependencies:** `perf_scan.mjs` requires `@babel/parser` and `@babel/traverse`. Inside a Claude Code session the SessionStart hook installs them automatically. For by-hand / CI use inside the plugin dir, run `npm install` in `${CLAUDE_PLUGIN_ROOT}` first. When using `npx`, deps are fetched automatically with the package.
 
 ## Perf Map 3D (the diagnose→fix bridge)
 
@@ -111,10 +116,10 @@ A static scan — no device needed. Steps:
 
 ```bash
 # 1. scan the target RN repo -> graph.json (Babel AST + perf-debt scoring)
-node "${CLAUDE_PLUGIN_ROOT}/skills/metrognome/scripts/perf_scan.mjs" <repo-or-src-path> --out graph.json
+$MG scan <repo-or-src-path> --out graph.json
 
 # 2. merge into a single standalone HTML (vendored 3d-force-graph + data inlined)
-node "${CLAUDE_PLUGIN_ROOT}/skills/metrognome/scripts/build_perf_map.mjs" graph.json --out perf-map.html --open
+$MG map graph.json --out perf-map.html --open
 ```
 
 Then: open `perf-map.html` (`--open` does it; otherwise `open perf-map.html`). Node **size = perf debt**, **color = severity** (red CRITICAL / orange HIGH / yellow MEDIUM / grey below-gate). Renders nodes with **debt ≥ 2** by default (live-adjustable via `min debt` control). A **search box** in the same panel jumps to any module by name; clicking a node shows the flaw, `file:line`, and the matching Callstack guide. **Present `top3` (from graph.json or printed) as ready-to-paste Autoresearch commands** — that closes the diagnose→fix loop.
@@ -223,7 +228,7 @@ Config keys:
 }
 ```
 
-Rebuild after each iteration: `node build_run_report.mjs .metrognome/run-state.json --out .metrognome/report.html`.
+Rebuild after each iteration: `$MG report .metrognome/run-state.json --out .metrognome/report.html`.
 If `openReport` is `true`, open `report.html` once at run start (auto-refreshes every 3 seconds).
 
 ## Ledger vs Memory

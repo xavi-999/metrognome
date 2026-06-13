@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.2.4 — 2026-06-13
+
+### Added
+- **npm package** — metrognome is now published to npm (`npx metrognome@latest`). `bin/metrognome.mjs` is a thin subcommand dispatcher (`scan · map · report · playbook · stats · doctor · heap`) that resolves scripts via `import.meta.url` — no path assumptions, works anywhere.
+- **Cross-harness compatibility** — scripts now run on OpenAI Codex CLI, Cursor, Gemini CLI, and GitHub Copilot CLI via `npx metrognome@latest <cmd>`. `SKILL.md` resolves the runner at session start: bundled local copy when `$CLAUDE_PLUGIN_ROOT` is set (Claude Code, zero latency, no network), `npx` otherwise. Claude Code behavior is identical to before.
+- **`AGENTS.md`** — cross-harness instruction anchor natively read by Codex/Cursor/Copilot; contains the perf-memory rule (replaces the UserPromptSubmit hook nudge on non-CC harnesses).
+- **`COMPATIBILITY.md`** — per-harness setup guide: MCP server JSON/TOML config for Cursor/Gemini/Copilot/Codex, skill directory table, `npx` script reference, Gemini `context.fileName` note.
+- **`package.json`**: `bin`, `files` allowlist (tarball is ~417 KB), `prepublishOnly: npm test`, added harness keywords (`codex`, `cursor`, `gemini-cli`, `copilot`, `ai-agent`). Removed `"private": true`.
+
+### Changed
+- `SKILL.md` "Locating scripts" section rewritten with the harness-agnostic `$MG` resolver; all command blocks converted from `node "${CLAUDE_PLUGIN_ROOT}/…/<script>.mjs"` to `$MG <subcommand>`.
+- `references/measurement.md`: one `stats.mjs` invocation converted to `$MG stats`.
+- `CONTRIBUTING.md`: version harmony note now includes `npm publish` step.
+- `README.md`: one cross-harness sentence after the tagline; compact "Other agents" install subsection linking to `COMPATIBILITY.md`.
+
+---
+
 ## v0.2.3 — 2026-06-10
 
 ### Added
