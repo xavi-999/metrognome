@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/xavi-999/metrognome/actions/workflows/ci.yml/badge.svg)](https://github.com/xavi-999/metrognome/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/xavi-999/metrognome)](https://github.com/xavi-999/metrognome/releases)
+[![npm](https://img.shields.io/npm/v/metrognome)](https://www.npmjs.com/package/metrognome)
+[![npm downloads](https://img.shields.io/npm/dm/metrognome)](https://www.npmjs.com/package/metrognome)
 [![License: MIT](https://img.shields.io/badge/license-MIT-16a34a)](./LICENSE)
 [![Live demo](https://img.shields.io/badge/live_demo-xavi--999.github.io-16a34a)](https://xavi-999.github.io/metrognome/)
 

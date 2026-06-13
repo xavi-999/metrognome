@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.5 — 2026-06-13
+
+### Fixed
+- `package.json` `repository.url` now has the `git+https://` prefix npm requires — eliminates the publish warning.
+- README: added `npm` (version) and `npm downloads` (monthly) badges linking to the package page.
+
+---
+
 ## v0.2.4 — 2026-06-13
 
 ### Added

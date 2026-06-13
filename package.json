@@ -1,6 +1,6 @@
 {
   "name": "metrognome",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "type": "module",
   "description": "Autonomous, scientific React Native performance optimization — propose → measure → keep/revert loop, 3D Perf Map, and per-repo performance memory.",
   "author": {
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/xavi-999/metrognome",
   "repository": {
     "type": "git",
-    "url": "https://github.com/xavi-999/metrognome.git"
+    "url": "git+https://github.com/xavi-999/metrognome.git"
   },
   "bugs": "https://github.com/xavi-999/metrognome/issues",
   "keywords": ["react-native", "expo", "performance", "metro", "hermes", "profiling", "claude-code", "plugin", "codex", "cursor", "gemini-cli", "copilot", "ai-agent"],
