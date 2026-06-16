@@ -1,3 +1,5 @@
+> ➡️ **Moved to [github.com/uphold/metrognome](https://github.com/uphold/metrognome).** This repo is archived and read-only.
+
 ![metrognome — the autonomous performance engineer for React Native](docs/banner.png)
 
 [![CI](https://github.com/xavi-999/metrognome/actions/workflows/ci.yml/badge.svg)](https://github.com/xavi-999/metrognome/actions/workflows/ci.yml)
